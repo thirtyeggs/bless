@@ -1,0 +1,143 @@
+-----------------------------------------------------------------------------------------
+BLESS: Bloom-filter-based Error Correction Solution for High-throughput Sequencing Reads
+
+Developed by: ESCAD Group, Computational Comparative Genomics Lab, and IMPACT Group
+              in Univsersity of Illinois at Urbana-Champaign
+-----------------------------------------------------------------------------------------
+
+
+--------------------------------------------------
+Change History
+--------------------------------------------------
+V0.11: 10/24/2013
+First release.
+
+V0.12: 12/02/2013
+Single-end (or merged paired-end) reads are supported.
+A bug in correcting errors in the first k-mer is corrected.
+
+V0.13: 04/06/2014
+Error correction accuracy has been improved especially for highly repetitive genomes.
+BLESS supports dumping/loading the Bloom filter contents.
+Reads are trimmed by default.
+
+V0.14: 04/08/2014
+Everything is equal to V0.13 except that this version supports Illumina 1.8+ FASTQ files.
+
+V0.15: 05/16/2014
+A bug that may occurs when overall quality scores are very bad is fixed.
+Reads that have more than MAX_N_RATIO * <read length> Ns are modified (default MAX_N_RATIO: 0.1).
+
+V0.16: 05/24/2014
+Memory leak that may happen in a read with many low-quality-score bases is fixed.
+
+V0.17: 06/03/2014
+A bug in setting the maximum allowed Ns for paired reads is fixed.
+
+V0.20: 10/16/2014
+BLESS is parallelized using OpenMP and MPI.
+Reads with different length are supported.
+The k-mer counting part is substituted with KMC (http://sun.aei.polsl.pl/kmc).
+Even values can be used for k.
+Some minor bugs are fixed.
+
+V0.21: 12/06/2014
+White space characters in correted read files are removed.
+The multi-threaded runtime is improved.
+
+V0.22: 12/17/2014
+MPI is applied to KMC.
+
+V0.23: 12/19/2014
+Minor bugs are fixed.
+
+V0.24: 01/29/2015
+KMC is updated to 2.2.1 (The max memory usage of KMC can be fixed to 4 GB for any genome).
+A bug in writing a quality score hisgoram file is fixed.
+
+V0.25: XX/XX/2015
+Non-ACGTN characters are converted to Ns.
+Minor bugs are fixed.
+
+
+--------------------------------------------------
+System Requirements
+--------------------------------------------------
+Compiling the program requires the BOOST C++ library (http://www.boost.org),
+the Google sparsehash library (https://code.google.com/p/sparsehash),
+and MPI libraries. The latest version was tested with GCC 4.7.1, MPICH 3.1.3
+(or OpenMPI 1.8.2), and BOOST 1.57.0.
+If you see the following error message, you need to upgrade your MPI library:
+error: initializing argument 2 of 'int MPI_File_open(MPI_Comm, char*, int, MPI_Info, ompi_file_t)'**
+
+
+--------------------------------------------------
+How to Install BLESS
+--------------------------------------------------
+Specify your Boost include and library directories in Makefile
+using BOOST_INC and BOOST_LIB variables.
+Then type make.
+
+
+--------------------------------------------------
+How to Run BLESS
+--------------------------------------------------
+Single-end reads or merged paired-end reads
+> ./bless -read <fastq> -prefix <output prefix> -kmerlength <k-mer length>
+<fastq>        : fastq file name
+<output prefix>: <output directory name>/<file prefix>
+<k-mer length> : k-mer length (odd number)
+
+Paired-end reads
+> ./bless -read1 <forward fastq> -read2 <reverse fastq> -prefix <output prefix> -kmerlength <k-mer length>
+<forward fastq>: first read file of a paired-end fastq file
+<reverse fastq>: second read file of a paired-end fastq file
+<output prefix>: <output directory name>/<file prefix>
+<k-mer length> : k-mer length (odd number)
+
+Run bless with no option to see the entire options.
+
+
+--------------------------------------------------
+Parallelizing BLESS
+--------------------------------------------------
+BLESS is parallelized using OpenMP and MPI.  The number of threads per each node can be changed
+using "-smpthread" option (default: the number of cores in a SMP node).
+
+Using multiple nodes using MPI
+Launch single process on a node and bind the processes to their nodes
+Ex) MPICH 3.1.3 Hydra Version
+> mpirun -ppn 1 -bind-to board ./bless -read1 <forward fastq> -read2 <reverse fastq> -prefix <output prefix> -kmerlength <k-mer length>
+
+
+--------------------------------------------------
+Choosing k-mer length
+--------------------------------------------------
+Our empirical analysis shows that the k value that satisfies the following two conditions usually generates the results close to the best one:
+1) Ns / 4^k ≤ 0.0001 where Ns represents the number of unique solid k-mers (BLESS reports Ns).
+2) Number of corrected bases becomes the maximum at the chosen k value, which means you need to increase k as long as the number of corrected reads increases.
+
+
+--------------------------------------------------
+How to Load Existing Bloom Filter Data
+--------------------------------------------------
+If you run BLESS with the "-prefix prefix" option, BLESS automatically generates the files prefix.bf.data and prefix.bf.size that have the contents of the Bloom filter.
+These files can be loaded into BLESS to skip the time-consuming Bloom filter build process.
+
+Single-end reads or merged paired-end reads
+> ./bless -read <fastq> -load prefix -prefix <new prefix> -kmerlength <k-mer length>
+
+Paired-end reads
+> ./bless -read1 <forward fastq> -read2 <reverse fastq> -load prefix -prefix <new prefix> -kmerlength <k-mer length>
+
+
+--------------------------------------------------
+Publications
+--------------------------------------------------
+Yun Heo, Xiao-Long Wu, Deming Chen, Jian Ma, Wen-Mei Hwu (2014). BLESS: Bloom filter-based error correction solution for high-throughput sequencing reads. Bioinformatics, 30 (10), 1354-1362. doi: 10.1093/bioinformatics/btu030
+
+
+--------------------------------------------------
+Bug Reports:
+--------------------------------------------------
+Yun Heo <yunheo1@illinois.edu>
