@@ -33,6 +33,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/functional/hash/extensions.hpp>
+#include <boost/regex.hpp>
 
 // google sparse hash
 #include <google/sparse_hash_map>
@@ -47,8 +48,8 @@
 
 // definitions
 #define HEX_UC(x)                 std::setw(2) << std::setfill('0') << std::hex << (int)(x)
-#define VERSION                   "0.24"
-#define DATE                      "Jan. 29, 2015"
+#define VERSION                   "0.25"
+#define DATE                      "XXX. XX, 2015"
 #define BITS_PER_CHAR             8
 #define MAX_KMER_THRESHOLD        65535
 #define NUM_NEOCLEOTIDE           4

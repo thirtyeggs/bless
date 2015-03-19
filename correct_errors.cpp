@@ -872,6 +872,8 @@ void C_correct_errors::correct_errors_in_reads_single_fastq(const C_arg& c_inst_
 
    std::size_t num_reads_local;
 
+   boost::regex regex_non_acgtn("[^ACGTN]");
+
    read_vector.resize(read_block_size * 3);
 
    num_corrected_errors_tmp = 0;
@@ -991,6 +993,9 @@ void C_correct_errors::correct_errors_in_reads_single_fastq(const C_arg& c_inst_
 
                         // change sequences to upper case
                         std::transform(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), read_vector[current_read_index + 1].begin(), static_cast<int(*)(int)>(std::toupper));
+
+                        // substitute non-standard characters with Ns
+                        read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
 
                         // set various thresholds
                         read_length      = read_vector[current_read_index + 1].length();
@@ -1163,6 +1168,9 @@ void C_correct_errors::correct_errors_in_reads_single_fastq(const C_arg& c_inst_
 
             // change sequences to upper case
             std::transform(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), read_vector[current_read_index + 1].begin(), static_cast<int(*)(int)>(std::toupper));
+
+            // substitute non-standard characters with Ns
+            read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
 
             // set various thresholds
             read_length      = read_vector[current_read_index + 1].length();
@@ -1421,6 +1429,8 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq(const C_arg& c_inst_
 
    std::size_t num_reads_local;
 
+   boost::regex regex_non_acgtn("[^ACGTN]");
+
    read_vector.resize(read_block_size * 3);
 
    num_corrected_errors_tmp = 0;
@@ -1540,6 +1550,9 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq(const C_arg& c_inst_
 
                         // change sequences to upper case
                         std::transform(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), read_vector[current_read_index + 1].begin(), static_cast<int(*)(int)>(std::toupper));
+
+                        // substitute non-standard characters with Ns
+                        read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
 
                         // set various thresholds
                         read_length      = read_vector[current_read_index + 1].length();
@@ -1712,6 +1725,9 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq(const C_arg& c_inst_
 
             // change sequences to upper case
             std::transform(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), read_vector[current_read_index + 1].begin(), static_cast<int(*)(int)>(std::toupper));
+
+            // substitute non-standard characters with Ns
+            read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
 
             // set various thresholds
             read_length      = read_vector[current_read_index + 1].length();
@@ -1962,6 +1978,9 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq(const C_arg& c_inst_
                         // change sequences to upper case
                         std::transform(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), read_vector[current_read_index + 1].begin(), static_cast<int(*)(int)>(std::toupper));
 
+                        // substitute non-standard characters with Ns
+                        read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+
                         // set various thresholds
                         read_length      = read_vector[current_read_index + 1].length();
                         min_check_length = read_length * CHECK_RANGE_RATIO;
@@ -2133,6 +2152,9 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq(const C_arg& c_inst_
 
             // change sequences to upper case
             std::transform(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), read_vector[current_read_index + 1].begin(), static_cast<int(*)(int)>(std::toupper));
+
+            // substitute non-standard characters with Ns
+            read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
 
             // set various thresholds
             read_length      = read_vector[current_read_index + 1].length();
