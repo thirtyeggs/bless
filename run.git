@@ -1,0 +1,5 @@
+#!/bin/bash
+
+git add --all
+git commit -am "03/19/2015 REV1"
+git push
