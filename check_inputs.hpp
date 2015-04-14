@@ -40,6 +40,7 @@ public:
    std::vector<std::size_t> starting_point_vector;
    std::vector<std::size_t> starting_point_vector1;
    std::vector<std::size_t> starting_point_vector2;
+   std::vector<std::size_t> qs_histo_vec;
 
    // constructor
    C_check_read() :
@@ -71,6 +72,10 @@ private:
    // functions
    void check_read_file_fastq_paired(const C_arg& c_inst_args);
    void check_read_file_fastq_single(const C_arg& c_inst_args);
+   void construct_quality_score_histogram_single_unzipped(const C_arg& c_inst_args);
+   void construct_quality_score_histogram_single_gzipped(const C_arg& c_inst_args);
+   void construct_quality_score_histogram_paired_unzipped(const C_arg& c_inst_args);
+   void construct_quality_score_histogram_paired_gzipped(const C_arg& c_inst_args);
 };
 
 

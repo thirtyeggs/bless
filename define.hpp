@@ -18,6 +18,7 @@
 #include <limits>
 #include <list>
 #include <queue>
+#include <regex>
 #include <sstream>
 #include <stack>
 #include <string>
@@ -30,6 +31,8 @@
 // boost libraries
 #include <boost/array.hpp>
 #include <boost/iostreams/device/mapped_file.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/functional/hash/extensions.hpp>

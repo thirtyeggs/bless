@@ -47,10 +47,6 @@ public:
    void count_kmers(const C_arg& c_inst_args, C_time& c_inst_time);
 
 private:
-   std::ifstream f_read;
-   std::ifstream f_read_1;
-   std::ifstream f_read_2;
-
    CKMCFile kmer_database;
 
    std::string rank_node_text;

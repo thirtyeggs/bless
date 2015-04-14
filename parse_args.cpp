@@ -164,6 +164,10 @@ void C_arg::read_args() {
    //--------------------------------------------------
    // check options
    //--------------------------------------------------
+   std::smatch smatch1;
+
+   std::regex rx_gz_ext("\\.gz$");
+
    // paried-end input
    if (read_file_name.empty()) {
       paired_read = true;
@@ -195,6 +199,28 @@ void C_arg::read_args() {
          }
          f_tmp.close();
       }
+
+      // check whether both the files are gzipped
+      // the first file is gzipped
+      if (std::regex_search(read_file_name1, smatch1, rx_gz_ext)) {
+         // the second file is gzipped
+         if (std::regex_search(read_file_name2, smatch1, rx_gz_ext)) {
+            gzipped_input_read = true;
+         }
+         // the second file is not gzipped
+         else {
+            std::cout <<  std::endl << "ERROR: Only one out of two input read files is gzipped" << read_file_name2 << std::endl << std::endl;
+            MPI_Abort(MPI_COMM_WORLD, 417);
+         }
+      }
+      // the first file is not gzipped
+      else {
+         // the second file is gzipped
+         if (std::regex_search(read_file_name1, smatch1, rx_gz_ext)) {
+            std::cout <<  std::endl << "ERROR: Only one out of two input read files is gzipped" << read_file_name2 << std::endl << std::endl;
+            MPI_Abort(MPI_COMM_WORLD, 417);
+         }
+      }
    }
    // single-end input
    else {
@@ -216,6 +242,11 @@ void C_arg::read_args() {
       if (read_file_name2.empty() == false) {
          std::cout << std::endl << "ERROR: -read2 cannot be used with -read" << std::endl;
          MPI_Abort(MPI_COMM_WORLD, 420);
+      }
+
+      // check whether both the files are gzipped
+      if (std::regex_search(read_file_name, smatch1, rx_gz_ext)) {
+         gzipped_input_read = true;
       }
    }
 

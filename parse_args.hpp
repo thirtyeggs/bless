@@ -56,6 +56,7 @@ public:
    bool notrim;
    bool paired_read;
    bool set_kmer_occurrence_threshold;
+   bool gzipped_input_read;
 
    // constructors
    explicit C_arg(
@@ -82,6 +83,7 @@ public:
                      notrim(false),
                      paired_read(true),
                      set_kmer_occurrence_threshold(false),
+                     gzipped_input_read(false),
                      num_args(argc),
                      args(argv)
                     {
