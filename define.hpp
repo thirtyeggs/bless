@@ -36,7 +36,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/functional/hash/extensions.hpp>
-#include <boost/regex.hpp>
+//#include <boost/regex.hpp>
 
 // google sparse hash
 #include <google/sparse_hash_map>

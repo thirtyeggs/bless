@@ -70,7 +70,7 @@ void C_check_read::check_read_file_fastq_single(const C_arg& c_inst_args) {
    // http://en.wikipedia.org/wiki/FASTQ_format
    if (min_quality_score < 33) {
       std::cout << std::endl << "ERROR: There is a quality score < 33" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 106);
+      MPI_Abort(MPI_COMM_WORLD, 100);
    }
    // 33 <= min_quality_score <= 58
    else if (min_quality_score <= 58) {
@@ -79,7 +79,7 @@ void C_check_read::check_read_file_fastq_single(const C_arg& c_inst_args) {
       }
       else {
          std::cout << std::endl << "ERROR: Irregular quality score range " << min_quality_score << "-" << max_quality_score << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 107);
+         MPI_Abort(MPI_COMM_WORLD, 101);
       }
    }
    // 59 <= min_quality_score <= 74
@@ -165,42 +165,7 @@ void C_check_read::check_read_file_fastq_paired(const C_arg& c_inst_args) {
    qs_histo_vec.resize(QS_HISTOGRAM_MAX + 1, 0);
 
    if (c_inst_args.gzipped_input_read) {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//      construct_quality_score_histogram_paired_gzipped(c_inst_args);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      construct_quality_score_histogram_paired_gzipped(c_inst_args);
    }
    else {
       construct_quality_score_histogram_paired_unzipped(c_inst_args);
@@ -216,15 +181,15 @@ void C_check_read::check_read_file_fastq_paired(const C_arg& c_inst_args) {
    for (int it_histo = 0; it_histo <= QS_HISTOGRAM_MAX; it_histo++) {
       if (qs_histo_vec[it_histo] > 0) {
          max_quality_score = it_histo;
-      }   
-   }   
+      }
+   }
 
    // min
    for (int it_histo = QS_HISTOGRAM_MAX; it_histo >= 0; it_histo--) {
       if (qs_histo_vec[it_histo] > 0) {
          min_quality_score = it_histo;
-      }   
-   }   
+      }
+   }
 
    //----------------------------------------------------------------
    // determine the quality score offset
@@ -232,7 +197,7 @@ void C_check_read::check_read_file_fastq_paired(const C_arg& c_inst_args) {
    // http://en.wikipedia.org/wiki/FASTQ_format
    if (min_quality_score < 33) {
       std::cout << std::endl << "ERROR: There is a quality score < 33" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 120);
+      MPI_Abort(MPI_COMM_WORLD, 102);
    }
    // 33 <= min_quality_score <= 58
    else if (min_quality_score <= 58) {
@@ -241,7 +206,7 @@ void C_check_read::check_read_file_fastq_paired(const C_arg& c_inst_args) {
       }
       else {
          std::cout << std::endl << "ERROR: Irregular quality score range " << min_quality_score << "-" << max_quality_score << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 121);
+         MPI_Abort(MPI_COMM_WORLD, 103);
       }
    }
    // 59 <= min_quality_score <= 74
@@ -329,7 +294,7 @@ void C_check_read::construct_quality_score_histogram_single_unzipped(const C_arg
 
    if (!f_read.is_open()) {
       std::cout << std::endl << "ERROR: Cannot open " << f_read << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 100);
+      MPI_Abort(MPI_COMM_WORLD, 104);
    }
 
    read_file_size_byte      = f_read.size();
@@ -340,20 +305,20 @@ void C_check_read::construct_quality_score_histogram_single_unzipped(const C_arg
    // check whether the size of the input file is 0
    if (read_file_size_byte == 0) {
       std::cout << std::endl << "ERROR: The size of " << c_inst_args.read_file_name << " is 0" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 101);
+      MPI_Abort(MPI_COMM_WORLD, 105);
    }
 
    // check whether the alignment unit offset is larger than MMAP_FILE_SIZE
    if (MMAP_FILE_SIZE <= read_file_unit_size_byte) {
       std::cout << std::endl << "ERROR: The block size for " << f_read << " should be larger than " << f_read.alignment() << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 102);
+      MPI_Abort(MPI_COMM_WORLD, 106);
    }
 
    // check whether the size of the input file < read_file_unit_size_byte X <number of nodes>
    // if it is true, some cores may not have one alignment unit in the input file
    if (num_units < (std::size_t)size_node) {
       std::cout << std::endl << "ERROR: The size of " << c_inst_args.read_file_name << " is too small. Run BLESS again without MPI." << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 103);
+      MPI_Abort(MPI_COMM_WORLD, 107);
    }
 
    f_read.close();
@@ -419,7 +384,7 @@ void C_check_read::construct_quality_score_histogram_single_unzipped(const C_arg
 
       if (!f_read.is_open()) {
          std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 104);
+         MPI_Abort(MPI_COMM_WORLD, 108);
       }
 
       // initialize variables
@@ -442,7 +407,7 @@ void C_check_read::construct_quality_score_histogram_single_unzipped(const C_arg
                // check read length
                if (line_length < c_inst_args.kmer_length) {
                   std::cout << std::endl << "ERROR: There are reads that are shorter than given k" << std::endl << std::endl;
-                  MPI_Abort(MPI_COMM_WORLD, 123);
+                  MPI_Abort(MPI_COMM_WORLD, 109);
                }
 
                for (unsigned int it = 0; it < line_length; it++) {
@@ -481,7 +446,7 @@ void C_check_read::construct_quality_score_histogram_single_unzipped(const C_arg
       }
       else if (remaining_bytes == prev_remaining_bytes) {
          std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name << " is wrong" << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 105);
+         MPI_Abort(MPI_COMM_WORLD, 110);
       }
       else {
          // align processedbytes to the multiple of unit_alignment_offset
@@ -517,11 +482,11 @@ void C_check_read::construct_quality_score_histogram_paired_unzipped(const C_arg
 
    if (!f_read_1.is_open()) {
       std::cout << std::endl << "ERROR: Cannot open " << f_read_1 << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 108);
+      MPI_Abort(MPI_COMM_WORLD, 111);
    }
    if (!f_read_2.is_open()) {
       std::cout << std::endl << "ERROR: Cannot open " << f_read_2 << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 109);
+      MPI_Abort(MPI_COMM_WORLD, 112);
    }
 
    read_file_size_byte1      = f_read_1.size();
@@ -535,32 +500,32 @@ void C_check_read::construct_quality_score_histogram_paired_unzipped(const C_arg
    // check whether the size of the input file is 0
    if (read_file_size_byte1 == 0) {
       std::cout << std::endl << "ERROR: The size of " << c_inst_args.read_file_name1 << " is 0" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 110);
+      MPI_Abort(MPI_COMM_WORLD, 113);
    }
    if (read_file_size_byte2 == 0) {
       std::cout << std::endl << "ERROR: The size of " << c_inst_args.read_file_name2 << " is 0" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 111);
+      MPI_Abort(MPI_COMM_WORLD, 114);
    }
 
    // check whether the alignment unit offset is larger than MMAP_FILE_SIZE
    if (MMAP_FILE_SIZE <= read_file_unit_size_byte1) {
       std::cout << std::endl << "ERROR: The block size for " << f_read_1 << " should be larger than " << f_read_1.alignment() << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 112);
+      MPI_Abort(MPI_COMM_WORLD, 115);
    }
    if (MMAP_FILE_SIZE <= read_file_unit_size_byte2) {
       std::cout << std::endl << "ERROR: The block size for " << f_read_2 << " should be larger than " << f_read_2.alignment() << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 113);
+      MPI_Abort(MPI_COMM_WORLD, 116);
    }
 
    // check whether the size of the input file < read_file_unit_size_byte X <number of nodes>
    // if it is true, some cores may not have one alignment unit in the input file
    if (num_units1 < (std::size_t)size_node) {
       std::cout << std::endl << "ERROR: The size of " << c_inst_args.read_file_name1 << " is too small. Run BLESS again without MPI." << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 114);
+      MPI_Abort(MPI_COMM_WORLD, 117);
    }
    if (num_units2 < (std::size_t)size_node) {
       std::cout << std::endl << "ERROR: The size of " << c_inst_args.read_file_name2 << " is too small. Run BLESS again without MPI." << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 115);
+      MPI_Abort(MPI_COMM_WORLD, 118);
    }
 
    f_read_1.close();
@@ -637,7 +602,7 @@ void C_check_read::construct_quality_score_histogram_paired_unzipped(const C_arg
 
       if (!f_read_1.is_open()) {
          std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name1 << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 116);
+         MPI_Abort(MPI_COMM_WORLD, 119);
       }
 
       // initialize variables
@@ -660,7 +625,7 @@ void C_check_read::construct_quality_score_histogram_paired_unzipped(const C_arg
                // check read length
                if (line_length < c_inst_args.kmer_length) {
                   std::cout << std::endl << "ERROR: There are reads that are shorter than given k" << std::endl << std::endl;
-                  MPI_Abort(MPI_COMM_WORLD, 124);
+                  MPI_Abort(MPI_COMM_WORLD, 120);
                }
 
                for (unsigned int it = 0; it < line_length; it++) {
@@ -699,7 +664,7 @@ void C_check_read::construct_quality_score_histogram_paired_unzipped(const C_arg
       }
       else if (remaining_bytes == prev_remaining_bytes) {
          std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name1 << " is wrong" << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 117);
+         MPI_Abort(MPI_COMM_WORLD, 121);
       }
       else {
          // align processedbytes to the multiple of unit_alignment_offset
@@ -748,7 +713,7 @@ void C_check_read::construct_quality_score_histogram_paired_unzipped(const C_arg
 
       if (!f_read_2.is_open()) {
          std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name2 << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 118);
+         MPI_Abort(MPI_COMM_WORLD, 122);
       }
 
       // initialize variables
@@ -771,7 +736,7 @@ void C_check_read::construct_quality_score_histogram_paired_unzipped(const C_arg
                // check read length
                if (line_length < c_inst_args.kmer_length) {
                   std::cout << std::endl << "ERROR: There are reads that are shorter than given k" << std::endl << std::endl;
-                  MPI_Abort(MPI_COMM_WORLD, 125);
+                  MPI_Abort(MPI_COMM_WORLD, 123);
                }
 
                for (unsigned int it = 0; it < line_length; it++) {
@@ -810,7 +775,7 @@ void C_check_read::construct_quality_score_histogram_paired_unzipped(const C_arg
       }
       else if (remaining_bytes == prev_remaining_bytes) {
          std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name2 << " is wrong" << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 119);
+         MPI_Abort(MPI_COMM_WORLD, 124);
       }
       else {
          // align processedbytes to the multiple of unit_alignment_offset
@@ -835,7 +800,7 @@ void C_check_read::construct_quality_score_histogram_paired_unzipped(const C_arg
    }
    else {
       std::cout << std::endl << "ERROR: Number of lines in two input files are not same" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 122);
+      MPI_Abort(MPI_COMM_WORLD, 125);
    }
 }
 
@@ -845,24 +810,24 @@ void C_check_read::construct_quality_score_histogram_paired_unzipped(const C_arg
 // construct_quality_score_histogram_single_gzipped
 //----------------------------------------------------------------------
 void C_check_read::construct_quality_score_histogram_single_gzipped(const C_arg& c_inst_args) {
+   //
+   // count the number of lines
+   //
    std::ifstream f_read;
 
-   // count the number of lines
    f_read.open(c_inst_args.read_file_name.c_str(), std::ios_base::binary);
 
    if (f_read.is_open() == false) {
       std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name << std::endl << std::endl;
       exit(EXIT_FAILURE);
-   }   
+   }
 
-   // set a filter
    boost::iostreams::filtering_istream f_read_filter;
 
    f_read_filter.push(boost::iostreams::gzip_decompressor());
    f_read_filter.push(f_read);
    f_read_filter.unsetf(std::ios_base::skipws);
 
-   // count the number of lines
    std::size_t num_lines;
    num_lines = std::count(std::istream_iterator<char>(f_read_filter), std::istream_iterator<char>(), '\n');
 
@@ -873,11 +838,11 @@ void C_check_read::construct_quality_score_histogram_single_gzipped(const C_arg&
    }
    else if (num_lines == 0) {
       std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name << " is 0" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 101);
+      MPI_Abort(MPI_COMM_WORLD, 126);
    }
    else if ((num_lines % 4) != 0) {
       std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name << " is not multiples of 4" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 101);
+      MPI_Abort(MPI_COMM_WORLD, 127);
    }
 
    // set num_reads_vector
@@ -899,12 +864,15 @@ void C_check_read::construct_quality_score_histogram_single_gzipped(const C_arg&
 
    f_read.close();
 
+   //
+   // build the quality score histogram
+   //
    // open the file again
    f_read.open(c_inst_args.read_file_name.c_str(), std::ios_base::binary);
 
    if (!f_read.is_open()) {
       std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 104);
+      MPI_Abort(MPI_COMM_WORLD, 128);
    }
 
    // set a filter
@@ -931,9 +899,226 @@ void C_check_read::construct_quality_score_histogram_single_gzipped(const C_arg&
          // check read length
          if (buffer.length() < c_inst_args.kmer_length) {
             std::cout << std::endl << "ERROR: There are reads that are shorter than given k" << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 123);
+            MPI_Abort(MPI_COMM_WORLD, 129);
          }
- 
+
+         for (unsigned int it = 0; it < buffer.length(); it++) {
+            qs_histo_vec[(int)buffer[it]]++;
+         }
+      }
+      else {
+         flag_run = 0;
+      }
+
+   }
+}
+
+
+
+//----------------------------------------------------------------------
+// construct_quality_score_histogram_paired_gzipped
+//----------------------------------------------------------------------
+void C_check_read::construct_quality_score_histogram_paired_gzipped(const C_arg& c_inst_args) {
+   //
+   // count the number of lines
+   //
+   std::ifstream f_read_1;
+   std::ifstream f_read_2;
+
+   f_read_1.open(c_inst_args.read_file_name1.c_str(), std::ios_base::binary);
+   f_read_2.open(c_inst_args.read_file_name2.c_str(), std::ios_base::binary);
+
+   // forward
+   if (f_read_1.is_open() == false) {
+      std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name1 << std::endl << std::endl;
+      exit(EXIT_FAILURE);
+   }
+
+   // reverse
+   if (f_read_2.is_open() == false) {
+      std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name2 << std::endl << std::endl;
+      exit(EXIT_FAILURE);
+   }
+
+   // set a filter
+   boost::iostreams::filtering_istream f_read_filter_1;
+   boost::iostreams::filtering_istream f_read_filter_2;
+
+   std::size_t num_lines_1;
+   std::size_t num_lines_2;
+
+   // forward
+   f_read_filter_1.push(boost::iostreams::gzip_decompressor());
+   f_read_filter_1.push(f_read_1);
+   f_read_filter_1.unsetf(std::ios_base::skipws);
+
+   num_lines_1 = std::count(std::istream_iterator<char>(f_read_filter_1), std::istream_iterator<char>(), '\n');
+
+   // reverse
+   f_read_filter_2.push(boost::iostreams::gzip_decompressor());
+   f_read_filter_2.push(f_read_2);
+   f_read_filter_2.unsetf(std::ios_base::skipws);
+
+   num_lines_2 = std::count(std::istream_iterator<char>(f_read_filter_2), std::istream_iterator<char>(), '\n');
+
+   // check the number of lines
+   // there might be no "\n" in the last line
+   // forward
+   if ((num_lines_1 % 4) == 1) {
+      num_lines_1++;
+   }
+   else if (num_lines_1 == 0) {
+      std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name1 << " is 0" << std::endl << std::endl;
+      MPI_Abort(MPI_COMM_WORLD, 130);
+   }
+   else if ((num_lines_1 % 4) != 0) {
+      std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name1 << " is not multiples of 4" << std::endl << std::endl;
+      MPI_Abort(MPI_COMM_WORLD, 131);
+   }
+
+   // reverse
+   if ((num_lines_2 % 4) == 1) {
+      num_lines_2++;
+   }
+   else if (num_lines_2 == 0) {
+      std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name2 << " is 0" << std::endl << std::endl;
+      MPI_Abort(MPI_COMM_WORLD, 132);
+   }
+   else if ((num_lines_2 % 4) != 0) {
+      std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name2 << " is not multiples of 4" << std::endl << std::endl;
+      MPI_Abort(MPI_COMM_WORLD, 133);
+   }
+
+   // set num_reads_vector_*
+   std::size_t num_reads_1(num_lines_1 / 4);
+   std::size_t num_reads_2(num_lines_2 / 4);
+   std::size_t num_reads_per_node_1(ceil(1.0 * num_reads_1 / size_node));
+   std::size_t num_reads_per_node_2(ceil(1.0 * num_reads_2 / size_node));
+   std::size_t num_reads_tmp_1(num_reads_1);
+   std::size_t num_reads_tmp_2(num_reads_2);
+
+   for (int it = 0; it < size_node; it++) {
+      // forward
+      if (num_reads_tmp_1 >= num_reads_per_node_1) {
+         num_reads_vector1.push_back(num_reads_per_node_1);
+         num_reads_tmp_1 = num_reads_tmp_1 - num_reads_per_node_1;
+      }
+      else {
+         num_reads_vector1.push_back(num_reads_tmp_1);
+         num_reads_tmp_1 = 0;
+      }
+
+      // reverse
+      if (num_reads_tmp_2 >= num_reads_per_node_2) {
+         num_reads_vector2.push_back(num_reads_per_node_2);
+         num_reads_tmp_2 = num_reads_tmp_2 - num_reads_per_node_2;
+      }
+      else {
+         num_reads_vector2.push_back(num_reads_tmp_2);
+         num_reads_tmp_2 = 0;
+      }
+   }
+
+   // compare num_reads_1 and num_reads_2
+   if (num_reads_1 == num_reads_2) {
+      num_reads = num_reads_1;
+   }
+   else {
+      std::cout << std::endl << "ERROR: The number of lines in the two input read files is not matched" << std::endl << std::endl;
+      MPI_Abort(MPI_COMM_WORLD, 134);
+   }
+
+   f_read_1.close();
+   f_read_2.close();
+
+   //
+   // build the quality score histogram
+   //
+   // open the file again
+   bool flag_run;
+
+   std::string buffer;
+
+   //
+   // forward
+   //
+   f_read_1.open(c_inst_args.read_file_name1.c_str(), std::ios_base::binary);
+
+   if (!f_read_1.is_open()) {
+      std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name1 << std::endl << std::endl;
+      MPI_Abort(MPI_COMM_WORLD, 135);
+   }
+
+   // set a filter
+   f_read_filter_1.reset();
+   f_read_filter_1.push(boost::iostreams::gzip_decompressor());
+   f_read_filter_1.push(f_read_1);
+
+   // iterate the file
+   flag_run = true;
+
+   while (flag_run) {
+      // header
+      std::getline(f_read_filter_1, buffer);
+      // sequence
+      std::getline(f_read_filter_1, buffer);
+      // +
+      std::getline(f_read_filter_1, buffer);
+      // quality score
+      std::getline(f_read_filter_1, buffer);
+
+      if (!f_read_filter_1.eof()) {
+         // check read length
+         if (buffer.length() < c_inst_args.kmer_length) {
+            std::cout << std::endl << "ERROR: There are reads that are shorter than given k" << std::endl << std::endl;
+            MPI_Abort(MPI_COMM_WORLD, 136);
+         }
+
+         for (unsigned int it = 0; it < buffer.length(); it++) {
+            qs_histo_vec[(int)buffer[it]]++;
+         }
+      }
+      else {
+         flag_run = 0;
+      }
+
+   }
+
+   //
+   // reverse
+   //
+   f_read_2.open(c_inst_args.read_file_name2.c_str(), std::ios_base::binary);
+
+   if (!f_read_2.is_open()) {
+      std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name2 << std::endl << std::endl;
+      MPI_Abort(MPI_COMM_WORLD, 137);
+   }
+
+   // set a filter
+   f_read_filter_2.reset();
+   f_read_filter_2.push(boost::iostreams::gzip_decompressor());
+   f_read_filter_2.push(f_read_2);
+
+   // iterate the file
+   flag_run = true;
+
+   while (flag_run) {
+      // header
+      std::getline(f_read_filter_2, buffer);
+      // sequence
+      std::getline(f_read_filter_2, buffer);
+      // +
+      std::getline(f_read_filter_2, buffer);
+      // quality score
+      std::getline(f_read_filter_2, buffer);
+
+      if (!f_read_filter_2.eof()) {
+         // check read length
+         if (buffer.length() < c_inst_args.kmer_length) {
+            std::cout << std::endl << "ERROR: There are reads that are shorter than given k" << std::endl << std::endl;
+            MPI_Abort(MPI_COMM_WORLD, 138);
+         }
+
          for (unsigned int it = 0; it < buffer.length(); it++) {
             qs_histo_vec[(int)buffer[it]]++;
          }

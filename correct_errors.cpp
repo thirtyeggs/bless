@@ -405,10 +405,46 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
    read_block_size = OPENMP_CHUNK_SIZE * READ_BLOCK_SIZE_RATIO * c_inst_args.smpthread;
 
    if (c_inst_args.paired_read == true) {
-      correct_errors_in_reads_paired_fastq(c_inst_args);
+      if (c_inst_args.gzipped_input_read) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+         // correct_errors_in_reads_paired_fastq_gzipped(c_inst_args);
+
+
+
+
+
+
+
+
+
+
+
+
+
+      }
+      else {
+         correct_errors_in_reads_paired_fastq_unzipped(c_inst_args);
+      }
    }
    else {
-      correct_errors_in_reads_single_fastq(c_inst_args);
+      if (c_inst_args.gzipped_input_read) {
+         correct_errors_in_reads_single_fastq_gzipped(c_inst_args);
+      }
+      else {
+         correct_errors_in_reads_single_fastq_unzipped(c_inst_args);
+      }
    }
 
    //MPI_Barrier(comm_node);
@@ -760,9 +796,9 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
 
 
 //----------------------------------------------------------------------
-// correct_errors_in_reads_single_fastq
+// correct_errors_in_reads_single_fastq_unzipped
 //----------------------------------------------------------------------
-void C_correct_errors::correct_errors_in_reads_single_fastq(const C_arg& c_inst_args) {
+void C_correct_errors::correct_errors_in_reads_single_fastq_unzipped(const C_arg& c_inst_args) {
    //----------------------------------------------------------------------
    // load bloom filter data
    //----------------------------------------------------------------------
@@ -821,12 +857,9 @@ void C_correct_errors::correct_errors_in_reads_single_fastq(const C_arg& c_inst_
       }
    }
 
-   //--------------------------------------------------
+   //----------------------------------------------------------------------
    // correct errors
-   //--------------------------------------------------
-   // order of the start read for this core
-   //std::size_t offset_num_reads;
-
+   //----------------------------------------------------------------------
    //
    // variables
    //
@@ -848,7 +881,6 @@ void C_correct_errors::correct_errors_in_reads_single_fastq(const C_arg& c_inst_
    std::size_t num_corrected_errors_tmp;
    std::size_t num_corrected_reads_tmp;
    std::size_t num_trimmed_bases_tmp;
-   //std::size_t num_read_blocks;
    std::size_t read_vector_index;
    std::size_t current_read_index;
    std::size_t current_read_index_write;
@@ -872,7 +904,8 @@ void C_correct_errors::correct_errors_in_reads_single_fastq(const C_arg& c_inst_
 
    std::size_t num_reads_local;
 
-   boost::regex regex_non_acgtn("[^ACGTN]");
+   //boost::regex regex_non_acgtn("[^ACGTN]");
+   std::regex regex_non_acgtn("[^ACGTN]");
 
    read_vector.resize(read_block_size * 3);
 
@@ -995,7 +1028,8 @@ void C_correct_errors::correct_errors_in_reads_single_fastq(const C_arg& c_inst_
                         std::transform(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), read_vector[current_read_index + 1].begin(), static_cast<int(*)(int)>(std::toupper));
 
                         // substitute non-standard characters with Ns
-                        read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+                        //read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+                        read_vector[current_read_index + 1] = std::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
 
                         // set various thresholds
                         read_length      = read_vector[current_read_index + 1].length();
@@ -1170,7 +1204,8 @@ void C_correct_errors::correct_errors_in_reads_single_fastq(const C_arg& c_inst_
             std::transform(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), read_vector[current_read_index + 1].begin(), static_cast<int(*)(int)>(std::toupper));
 
             // substitute non-standard characters with Ns
-            read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+            //read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+            read_vector[current_read_index + 1] = std::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
 
             // set various thresholds
             read_length      = read_vector[current_read_index + 1].length();
@@ -1317,9 +1352,9 @@ void C_correct_errors::correct_errors_in_reads_single_fastq(const C_arg& c_inst_
 
 
 //----------------------------------------------------------------------
-// correct_errors_in_reads_paired_fastq
+// correct_errors_in_reads_paired_fastq_unzipped
 //----------------------------------------------------------------------
-void C_correct_errors::correct_errors_in_reads_paired_fastq(const C_arg& c_inst_args) {
+void C_correct_errors::correct_errors_in_reads_paired_fastq_unzipped(const C_arg& c_inst_args) {
    //----------------------------------------------------------------------
    // load bloom filter data
    //----------------------------------------------------------------------
@@ -1381,9 +1416,6 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq(const C_arg& c_inst_
    //--------------------------------------------------
    // correct errors
    //--------------------------------------------------
-   // order of the start read for this core
-   //std::size_t offset_num_reads;
-
    //
    // variables
    //
@@ -1429,7 +1461,8 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq(const C_arg& c_inst_
 
    std::size_t num_reads_local;
 
-   boost::regex regex_non_acgtn("[^ACGTN]");
+   //boost::regex regex_non_acgtn("[^ACGTN]");
+   std::regex regex_non_acgtn("[^ACGTN]");
 
    read_vector.resize(read_block_size * 3);
 
@@ -1552,7 +1585,8 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq(const C_arg& c_inst_
                         std::transform(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), read_vector[current_read_index + 1].begin(), static_cast<int(*)(int)>(std::toupper));
 
                         // substitute non-standard characters with Ns
-                        read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+                        //read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+                        read_vector[current_read_index + 1] = std::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
 
                         // set various thresholds
                         read_length      = read_vector[current_read_index + 1].length();
@@ -1727,7 +1761,8 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq(const C_arg& c_inst_
             std::transform(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), read_vector[current_read_index + 1].begin(), static_cast<int(*)(int)>(std::toupper));
 
             // substitute non-standard characters with Ns
-            read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+            //read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+            read_vector[current_read_index + 1] = std::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
 
             // set various thresholds
             read_length      = read_vector[current_read_index + 1].length();
@@ -1979,7 +2014,8 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq(const C_arg& c_inst_
                         std::transform(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), read_vector[current_read_index + 1].begin(), static_cast<int(*)(int)>(std::toupper));
 
                         // substitute non-standard characters with Ns
-                        read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+                        //read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+                        read_vector[current_read_index + 1] = std::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
 
                         // set various thresholds
                         read_length      = read_vector[current_read_index + 1].length();
@@ -2154,7 +2190,8 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq(const C_arg& c_inst_
             std::transform(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), read_vector[current_read_index + 1].begin(), static_cast<int(*)(int)>(std::toupper));
 
             // substitute non-standard characters with Ns
-            read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+            //read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+            read_vector[current_read_index + 1] = std::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
 
             // set various thresholds
             read_length      = read_vector[current_read_index + 1].length();
@@ -5696,4 +5733,509 @@ void C_correct_errors::generate_hash_seed(const bloom_type random_seed, std::vec
 void C_candidate_path::clear_path() {
    modified_bases.clear();
    sum_qs = 0;
+}
+
+
+
+//----------------------------------------------------------------------
+// correct_errors_in_reads_single_fastq_gzipped
+//----------------------------------------------------------------------
+void C_correct_errors::correct_errors_in_reads_single_fastq_gzipped(const C_arg& c_inst_args) {
+   //----------------------------------------------------------------------
+   // load bloom filter data
+   //----------------------------------------------------------------------
+   // generate unique hash seeds
+   std::vector<unsigned int> hash_seed;
+   // no bloom filter data load
+   // use a command line random seed
+   if (c_inst_args.load_bf == false) {
+      generate_hash_seed(c_inst_args.random_seed, hash_seed);
+   }
+   // load bloom filter data
+   // use a loaded random seed
+   else {
+      generate_hash_seed(random_seed, hash_seed);
+   }
+
+   // generate a bloom filter
+   unsigned char* bit_vector(new unsigned char[static_cast<std::size_t>(bit_vector_width_byte)]);
+   std::fill_n(bit_vector, bit_vector_width_byte, 0x00);
+
+   // open the bloom filter data file
+   std::string bf_data_file_name;
+   std::string bf_size_file_name;
+   if (c_inst_args.load_bf == false) {
+      bf_data_file_name = c_inst_args.bf_data_file_name;
+      bf_size_file_name = c_inst_args.bf_size_file_name;
+   }
+   else {
+      bf_data_file_name = c_inst_args.loaded_bf_data_file_name;
+      bf_size_file_name = c_inst_args.loaded_bf_size_file_name;
+   }
+
+   std::ifstream f_bf_dump_data;
+   f_bf_dump_data.open(bf_data_file_name.c_str(), std::ios::binary);
+   if (f_bf_dump_data.is_open() == false) {
+      std::cout << std::endl << "ERROR: Cannot open " << bf_data_file_name << std::endl << std::endl;
+      MPI_Abort(MPI_COMM_WORLD, 211);
+   }
+
+   // load bit vector data
+   f_bf_dump_data.read(reinterpret_cast<char*>(bit_vector), bit_vector_width_byte);
+
+   f_bf_dump_data.close();
+
+   if (rank_node == 0) {
+      // calculate the size of the bloom filter in megabyte
+      bloom_type bit_vector_size_mb(bit_vector_width_byte / (1024 * 1024));
+
+      if (c_inst_args.load_bf == true) {
+         std::cout << "     Bloom filter data file    : " << c_inst_args.bf_data_file_name << std::endl;
+         std::cout << "     Bloom filter size file    : " << c_inst_args.bf_size_file_name << std::endl;
+         std::cout << "     Number of keys            : " << num_unique_solid_kmers << std::endl;
+         std::cout << "     Bit-vector size           : " << bit_vector_size_mb << " MB" << std::endl;
+         std::cout << "     Number of hash functions  : " << num_hash_func << std::endl;
+         std::cout << "     k-mer threshold           : " << kmer_occurrence_threshold << std::endl;
+      }
+   }
+
+   //----------------------------------------------------------------------
+   // correct errors
+   //----------------------------------------------------------------------
+   //
+   // variables
+   //
+   std::vector<std::string> read_vector;
+
+   std::string sequence_modification;
+   std::string trimmed_seq;
+   std::string trimmed_qs;
+
+   std::size_t read_length;
+   std::size_t min_check_length;
+   std::size_t max_allowed_ns;
+   std::size_t max_trimmed_bases;
+   std::size_t num_corrected_errors_local;
+   std::size_t trim_5_end;
+   std::size_t trim_3_end;
+   std::size_t num_corrected_errors_tmp;
+   std::size_t num_corrected_reads_tmp;
+   std::size_t num_trimmed_bases_tmp;
+   std::size_t read_vector_index;
+   std::size_t current_read_index;
+   std::size_t current_read_index_write;
+   std::size_t end_read_prev_rank;
+
+   bool too_many_errors;
+
+   std::size_t num_reads_local;
+
+   //boost::regex regex_non_acgtn("[^ACGTN]");
+   std::regex regex_non_acgtn("[^ACGTN]");
+
+   read_vector.resize(read_block_size * 3);
+
+   num_corrected_errors_tmp = 0;
+   num_corrected_reads_tmp  = 0;
+   num_trimmed_bases_tmp    = 0;
+
+   // initialize variables
+   num_reads_local          = 0;
+   read_vector_index        = 0;
+   current_read_index_write = 0;
+
+   // calculate end_read_prev_rank
+   // the current node rank == 0
+   if (rank_node == 0) {
+      end_read_prev_rank = 0;
+   }
+   // the current node rank > 0
+   else {
+      // if no read is assigned to this node
+      // finding a start point is not needed
+      if (num_reads_vector[rank_node] == 0) {
+         end_read_prev_rank = 0;
+      }
+      else {
+         for (int it_rank = 0; it_rank < rank_node; it_rank++) {
+            end_read_prev_rank += num_reads_vector[it_rank];
+         }
+      }
+   }
+
+   // open a temporary output file
+   std::string corrected_read_file_name(c_inst_args.corrected_read_file_name + '.' + rank_node_text);
+
+   FILE* f_corrected_read(fopen(corrected_read_file_name.c_str(), "w"));
+   if (f_corrected_read == NULL) {
+      std::cout << std::endl << "ERROR: Cannot open " << corrected_read_file_name << std::endl << std::endl;
+      MPI_Abort(MPI_COMM_WORLD, 212);
+   }
+
+   // open the file
+   std::ifstream f_read;
+   f_read.open(c_inst_args.read_file_name.c_str(), std::ios_base::binary);
+
+   if (!f_read.is_open()) {
+      std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name << std::endl << std::endl;
+      MPI_Abort(MPI_COMM_WORLD, 214);
+   }
+
+   // set a stream filter for gzipped files
+   boost::iostreams::filtering_istream f_read_filter;
+
+   f_read_filter.push(boost::iostreams::gzip_decompressor());
+   f_read_filter.push(f_read);
+
+   // skip unnecessary reads
+   std::string buffer_not_needed;
+
+   for (std::size_t it_read_order = 0; it_read_order < end_read_prev_rank; it_read_order++) {
+      std::getline(f_read_filter, buffer_not_needed);
+      std::getline(f_read_filter, buffer_not_needed);
+      std::getline(f_read_filter, buffer_not_needed);
+      std::getline(f_read_filter, buffer_not_needed);
+   }
+
+   // process reads
+   for (std::size_t it_read_order = 0; it_read_order < num_reads_vector[rank_node]; it_read_order++) {
+      // calculate the index for read_vector
+      current_read_index_write = read_vector_index * 3;
+
+      //
+      // header
+      //
+      std::getline(f_read_filter, read_vector[current_read_index_write]);
+
+      //
+      // sequence
+      //
+      std::getline(f_read_filter, read_vector[current_read_index_write + 1]);
+
+      //
+      // connector
+      //
+      std::getline(f_read_filter, buffer_not_needed);
+
+      //
+      // quality score
+      //
+      std::getline(f_read_filter, read_vector[current_read_index_write + 2]);
+
+      read_vector_index++;
+      num_reads_local++;
+
+      // read_vector is full
+      if (read_vector_index == read_block_size) {
+         //--------------------------------------------------
+         // correct reads in a block
+         //--------------------------------------------------
+         #pragma omp parallel shared(bit_vector, hash_seed, read_vector) private(current_read_index, read_length, min_check_length, max_allowed_ns, max_trimmed_bases, num_corrected_errors_local, trim_5_end, trim_3_end, sequence_modification, too_many_errors) reduction(+: num_corrected_errors_tmp, num_corrected_reads_tmp, num_trimmed_bases_tmp)
+         {
+            // iterate reads
+            #pragma omp for schedule(dynamic, OPENMP_CHUNK_SIZE)
+            for (std::size_t it_read = 0; it_read < read_block_size; it_read++) {
+               // calculate the current index
+               current_read_index = it_read * 3;
+
+               // change sequences to upper case
+               std::transform(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), read_vector[current_read_index + 1].begin(), static_cast<int(*)(int)>(std::toupper));
+
+               // substitute non-standard characters with Ns
+               //read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+               read_vector[current_read_index + 1] = std::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+
+               // set various thresholds
+               read_length      = read_vector[current_read_index + 1].length();
+               min_check_length = read_length * CHECK_RANGE_RATIO;
+               max_allowed_ns   = read_length * MAX_N_RATIO;
+
+               // forward
+               // too short read: no trimming
+               if (read_length <= MIN_BASES_AFTER_TRIMMING) {
+                  max_trimmed_bases = 0;
+               }
+               else {
+                  max_trimmed_bases = std::min((std::size_t)(read_length * MAX_TRIMMING_RATE), read_length - MIN_BASES_AFTER_TRIMMING);
+               }
+
+               // check the number of Ns in the read
+               if (((std::size_t)std::count(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), 'N') <= max_allowed_ns) &&
+                   (read_length >= kmer_length)) {
+                  // substitute Ns other characters
+                  std::replace(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), 'N', SUBST_CHAR);
+
+                  // initialize variables
+                  num_corrected_errors_local = 0;
+                  trim_5_end                 = 0;
+                  trim_3_end                 = 0;
+
+                  // storage for the modification of the reads
+                  // # of entries = read length
+                  sequence_modification.assign(read_length, '0');
+
+                  //----------------------------------------------------------------------
+                  // correct errors in a read
+                  //----------------------------------------------------------------------
+                  // forward read
+                  // errors cannot be corrected if k is equal to read length
+                  if (read_length > kmer_length) {
+                     correct_errors_in_a_read_fastq(
+                                                    read_vector[current_read_index + 1],
+                                                    sequence_modification,
+                                                    read_vector[current_read_index + 2],
+                                                    trim_5_end,
+                                                    trim_3_end,
+                                                    read_length,
+                                                    max_trimmed_bases,
+                                                    min_check_length,
+                                                    num_corrected_errors_local,
+                                                    bit_vector,
+                                                    hash_seed
+                                                   );
+                  }
+
+                  // no trim
+                  if (c_inst_args.notrim == true) {
+                     trim_5_end = 0;
+                     trim_3_end = 0;
+                  }
+                  // adjust the number of trimmed bases
+                  else {
+                     if ((trim_5_end + trim_3_end) > max_trimmed_bases) {
+                        if (trim_3_end <= max_trimmed_bases) {
+                           trim_5_end = 0;
+                        }
+                        else if (trim_5_end <= max_trimmed_bases) {
+                           trim_3_end = 0;
+                        }
+                        else {
+                           trim_5_end = 0;
+                           trim_3_end = max_trimmed_bases;
+                        }
+                     }
+                  }
+
+                  num_trimmed_bases_tmp += (trim_5_end + trim_3_end);
+
+                  // update num_corrected_reads
+                  too_many_errors = false;
+                  if (num_corrected_errors_local > (read_vector[current_read_index + 1].length() * MAX_ERROR_RATE)) {
+                     too_many_errors = true;
+                  }
+                  else if (num_corrected_errors_local > 0) {
+                     num_corrected_errors_tmp += num_corrected_errors_local;
+
+                     num_corrected_reads_tmp++;
+                  }
+                  else if (c_inst_args.notrim == false) {
+                     if ((trim_5_end > 0) || (trim_3_end > 0)) {
+                        num_corrected_reads_tmp++;
+                     }
+                  }
+
+                  // make a corrected read
+                  if (too_many_errors == false) {
+                     // apply modifications to the read
+                     for (unsigned int it_base = trim_5_end; it_base < (read_vector[current_read_index + 1].length() - trim_3_end); it_base++) {
+                        if (sequence_modification[it_base] != '0') {
+                           read_vector[current_read_index + 1][it_base] = sequence_modification[it_base];
+                        }
+                     }
+                  }
+                  // make a trimmed read
+                  read_vector[current_read_index + 1] = read_vector[current_read_index + 1].substr(trim_5_end, read_vector[current_read_index + 1].length() - trim_5_end - trim_3_end) + '\n';
+                  read_vector[current_read_index + 2] = read_vector[current_read_index + 2].substr(trim_5_end, read_vector[current_read_index + 2].length() - trim_5_end - trim_3_end) + '\n';
+               }
+               // too many Ns
+               // write reads without modification
+               else {
+                  // sequence
+                  read_vector[current_read_index + 1] += '\n';
+
+                  // quality score
+                  read_vector[current_read_index + 2] += '\n';
+               }
+            // it_read
+            }
+         // omp parallel
+         }
+
+         // write corrected_reads
+         for (std::size_t it_write = 0; it_write < read_block_size; it_write++) {
+            current_read_index = it_write * 3;
+
+            // header
+            fwrite(read_vector[current_read_index].c_str(), 1, read_vector[current_read_index].length(), f_corrected_read);
+            // sequence
+            fwrite(read_vector[current_read_index + 1].c_str(), 1, read_vector[current_read_index + 1].length(), f_corrected_read);
+            // connector
+            fwrite("+\n", 1, 2, f_corrected_read);
+            // quality score
+            fwrite(read_vector[current_read_index + 2].c_str(), 1, read_vector[current_read_index + 2].length(), f_corrected_read);
+         }
+
+         read_vector_index = 0;
+      }
+   }
+
+   f_read.close();
+
+   // correct errors in remaining reads
+   if (read_vector_index > 0) {
+      #pragma omp parallel shared(bit_vector, hash_seed, read_vector) private(current_read_index, read_length, min_check_length, max_allowed_ns, max_trimmed_bases, num_corrected_errors_local, trim_5_end, trim_3_end, sequence_modification, too_many_errors) reduction(+: num_corrected_errors_tmp, num_corrected_reads_tmp, num_trimmed_bases_tmp)
+      {
+         // iterate reads
+         #pragma omp for schedule(dynamic, OPENMP_CHUNK_SIZE)
+         for (std::size_t it_read = 0; it_read < read_vector_index; it_read++) {
+            // calculate the current index
+            current_read_index = it_read * 3;
+
+            // change sequences to upper case
+            std::transform(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), read_vector[current_read_index + 1].begin(), static_cast<int(*)(int)>(std::toupper));
+
+            // substitute non-standard characters with Ns
+            //read_vector[current_read_index + 1] = boost::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+            read_vector[current_read_index + 1] = std::regex_replace(read_vector[current_read_index + 1], regex_non_acgtn, "N");
+
+            // set various thresholds
+            read_length      = read_vector[current_read_index + 1].length();
+            min_check_length = read_length * CHECK_RANGE_RATIO;
+            max_allowed_ns   = read_length * MAX_N_RATIO;
+
+            // forward
+            // too short read: no trimming
+            if (read_length <= MIN_BASES_AFTER_TRIMMING) {
+               max_trimmed_bases = 0;
+            }
+            else {
+               max_trimmed_bases = std::min((std::size_t)(read_length * MAX_TRIMMING_RATE), read_length - MIN_BASES_AFTER_TRIMMING);
+            }
+
+            // check the number of Ns in the read
+            if (((std::size_t)std::count(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), 'N') <= max_allowed_ns) &&
+                (read_length >= kmer_length)) {
+               // substitute Ns other characters
+               std::replace(read_vector[current_read_index + 1].begin(), read_vector[current_read_index + 1].end(), 'N', SUBST_CHAR);
+
+               // initialize variables
+               num_corrected_errors_local = 0;
+               trim_5_end                 = 0;
+               trim_3_end                 = 0;
+
+               // storage for the modification of the reads
+               // # of entries = read length
+               sequence_modification.assign(read_length, '0');
+
+               //----------------------------------------------------------------------
+               // correct errors in a read
+               //----------------------------------------------------------------------
+               // forward read
+               // errors cannot be corrected if k is equal to read length
+               if (read_length > kmer_length) {
+                  correct_errors_in_a_read_fastq(
+                                                 read_vector[current_read_index + 1],
+                                                 sequence_modification,
+                                                 read_vector[current_read_index + 2],
+                                                 trim_5_end,
+                                                 trim_3_end,
+                                                 read_length,
+                                                 max_trimmed_bases,
+                                                 min_check_length,
+                                                 num_corrected_errors_local,
+                                                 bit_vector,
+                                                 hash_seed
+                                                );
+               }
+
+               // no trim
+               if (c_inst_args.notrim == true) {
+                  trim_5_end = 0;
+                  trim_3_end = 0;
+               }
+               // adjust the number of trimmed bases
+               else {
+                  if ((trim_5_end + trim_3_end) > max_trimmed_bases) {
+                     if (trim_3_end <= max_trimmed_bases) {
+                        trim_5_end = 0;
+                     }
+                     else if (trim_5_end <= max_trimmed_bases) {
+                        trim_3_end = 0;
+                     }
+                     else {
+                        trim_5_end = 0;
+                        trim_3_end = max_trimmed_bases;
+                     }
+                  }
+               }
+
+               num_trimmed_bases_tmp += (trim_5_end + trim_3_end);
+
+               // update num_corrected_reads
+               too_many_errors = false;
+               if (num_corrected_errors_local > (read_vector[current_read_index + 1].length() * MAX_ERROR_RATE)) {
+                  too_many_errors = true;
+               }
+               else if (num_corrected_errors_local > 0) {
+                  num_corrected_errors_tmp += num_corrected_errors_local;
+
+                  num_corrected_reads_tmp++;
+               }
+               else if (c_inst_args.notrim == false) {
+                  if ((trim_5_end > 0) || (trim_3_end > 0)) {
+                     num_corrected_reads_tmp++;
+                  }
+               }
+
+               // make a corrected read
+               if (too_many_errors == false) {
+                  // apply modifications to the read
+                  for (unsigned int it_base = trim_5_end; it_base < (read_vector[current_read_index + 1].length() - trim_3_end); it_base++) {
+                     if (sequence_modification[it_base] != '0') {
+                        read_vector[current_read_index + 1][it_base] = sequence_modification[it_base];
+                     }
+                  }
+               }
+               read_vector[current_read_index + 1] = read_vector[current_read_index + 1].substr(trim_5_end, read_vector[current_read_index + 1].length() - trim_5_end - trim_3_end) + '\n';
+
+               // make a trimmed quality score
+               read_vector[current_read_index + 2] = read_vector[current_read_index + 2].substr(trim_5_end, read_vector[current_read_index + 2].length() - trim_5_end - trim_3_end) + '\n';
+            }
+            // too many Ns
+            // write reads without modification
+            else {
+               // sequence
+               read_vector[current_read_index + 1] += '\n';
+
+               // quality score
+               read_vector[current_read_index + 2] += '\n';
+            }
+         // it_read
+         }
+
+      // omp parallel
+      }
+
+      // write corrected_reads
+      for (std::size_t it_read = 0; it_read < read_vector_index; it_read++) {
+         current_read_index = it_read * 3;
+
+         // header
+         fwrite(read_vector[current_read_index].c_str(), 1, read_vector[current_read_index].length(), f_corrected_read);
+         // sequence
+         fwrite(read_vector[current_read_index + 1].c_str(), 1, read_vector[current_read_index + 1].length(), f_corrected_read);
+         // connector
+         fwrite("+\n", 1, 2, f_corrected_read);
+         // quality score
+         fwrite(read_vector[current_read_index + 2].c_str(), 1, read_vector[current_read_index + 2].length(), f_corrected_read);
+      }
+   }
+
+   fclose(f_corrected_read);
+
+   read_vector.clear();
+
+   num_corrected_errors = num_corrected_errors_tmp;
+   num_corrected_reads  = num_corrected_reads_tmp;
+   num_trimmed_bases    = num_trimmed_bases_tmp;
 }

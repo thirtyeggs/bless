@@ -78,7 +78,6 @@ int main(int argc, char** argv) {
       c_inst_check_reads.starting_point_vector2.resize(size_node);
    }
 
-/*
    // broadcast variables from global rank 0 to the others
    MPI_Bcast(&c_inst_check_reads.quality_score_offset,        1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
    MPI_Bcast(&c_inst_check_reads.extremely_low_quality_score, 1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
@@ -86,20 +85,26 @@ int main(int argc, char** argv) {
    MPI_Bcast(&c_inst_check_reads.num_reads,                   1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
 
    if (c_inst_args.paired_read) {
-      MPI_Bcast(&c_inst_check_reads.read_file_size_byte1,      1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
-      MPI_Bcast(&c_inst_check_reads.read_file_size_byte2,      1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
-      MPI_Bcast(&c_inst_check_reads.read_file_unit_size_byte1, 1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
-      MPI_Bcast(&c_inst_check_reads.read_file_unit_size_byte2, 1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
       MPI_Bcast(&c_inst_check_reads.num_reads_vector1[0],      size_node, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
       MPI_Bcast(&c_inst_check_reads.num_reads_vector2[0],      size_node, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
-      MPI_Bcast(&c_inst_check_reads.starting_point_vector1[0], size_node, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
-      MPI_Bcast(&c_inst_check_reads.starting_point_vector2[0], size_node, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
+
+      if (c_inst_args.gzipped_input_read == false) {
+         MPI_Bcast(&c_inst_check_reads.read_file_size_byte1,      1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
+         MPI_Bcast(&c_inst_check_reads.read_file_size_byte2,      1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
+         MPI_Bcast(&c_inst_check_reads.read_file_unit_size_byte1, 1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
+         MPI_Bcast(&c_inst_check_reads.read_file_unit_size_byte2, 1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
+         MPI_Bcast(&c_inst_check_reads.starting_point_vector1[0], size_node, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
+         MPI_Bcast(&c_inst_check_reads.starting_point_vector2[0], size_node, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
+      }
    }
    else {
-      MPI_Bcast(&c_inst_check_reads.read_file_size_byte,      1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
-      MPI_Bcast(&c_inst_check_reads.read_file_unit_size_byte, 1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
       MPI_Bcast(&c_inst_check_reads.num_reads_vector[0],      size_node, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
-      MPI_Bcast(&c_inst_check_reads.starting_point_vector[0], size_node, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
+
+      if (c_inst_args.gzipped_input_read == false) {
+         MPI_Bcast(&c_inst_check_reads.read_file_size_byte,      1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
+         MPI_Bcast(&c_inst_check_reads.read_file_unit_size_byte, 1,         MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
+         MPI_Bcast(&c_inst_check_reads.starting_point_vector[0], size_node, MPI_UNSIGNED_LONG_LONG, 0, MPI_COMM_WORLD);
+      }
    }
 
    //----------------------------------------------------------------------
@@ -200,7 +205,6 @@ int main(int argc, char** argv) {
    if ((rank_node == 0) && (rank_smp == 0)) {
       c_inst_correct_errors.summarize_outputs(c_inst_args, c_inst_time);
    }
-*/
 
    MPI_Finalize();
 
