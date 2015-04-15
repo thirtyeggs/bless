@@ -57,6 +57,7 @@ public:
    bool paired_read;
    bool set_kmer_occurrence_threshold;
    bool gzipped_input_read;
+   bool gzipped_output_read;
 
    // constructors
    explicit C_arg(
@@ -84,6 +85,7 @@ public:
                      paired_read(true),
                      set_kmer_occurrence_threshold(false),
                      gzipped_input_read(false),
+                     gzipped_output_read(false),
                      num_args(argc),
                      args(argv)
                     {

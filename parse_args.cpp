@@ -150,6 +150,9 @@ void C_arg::read_args() {
       else if (strcmp(args[it_arg], "-debug") == 0) {
          debug = true;
       }
+      else if (strcmp(args[it_arg], "-gzip") == 0) {
+         gzipped_output_read = true;
+      }
       else if (strcmp(args[it_arg], "-notrim") == 0) {
          notrim = true;
          notrim_text = "On";
@@ -347,9 +350,16 @@ void C_arg::read_args() {
    qs_histo_file_name   = prefix + ".histo.qs";
 
    // set error_corrected read file names
-   corrected_read_file_name  = prefix + ".corrected.fastq";
-   corrected_read_file_name1 = prefix + ".1.corrected.fastq";
-   corrected_read_file_name2 = prefix + ".2.corrected.fastq";
+   if (gzipped_output_read == true) {
+      corrected_read_file_name  = prefix + ".corrected.fastq.gz";
+      corrected_read_file_name1 = prefix + ".1.corrected.fastq.gz";
+      corrected_read_file_name2 = prefix + ".2.corrected.fastq.gz";
+   }
+   else {
+      corrected_read_file_name  = prefix + ".corrected.fastq";
+      corrected_read_file_name1 = prefix + ".1.corrected.fastq";
+      corrected_read_file_name2 = prefix + ".2.corrected.fastq";
+   }
 
    // set bloom filter dump file names
    bf_data_file_name        = prefix    + ".bf.data";
@@ -441,8 +451,7 @@ void C_arg::print_usage() {
    std::cout << "     -extend <integer>: Read extension amount. Default: " << extend << "." << std::endl;
    std::cout << "     -fpr <float>: Target false positive probability for the Bloom" << std::endl;
    std::cout << "          filter. Default: " << DEFAULT_FPR << "." << std::endl;
-   std::cout << "     -smpthread <integer>: Number of threads used in a SMP node." << std::endl;
-   std::cout << "          Default: number of cores in each SMP node." << std::endl;
+   std::cout << "     -gzip: Compress output files." << std::endl;
    std::cout << "     -load <prefix>: Skip the solid k-mer finding step and load" << std::endl;
    std::cout << "          pre-built Bloom filter data. When BLESS is executed with" << std::endl;
    std::cout << "          \"-prefix <prefix>\" option <prefix>.bf.data and" << std::endl;
@@ -453,6 +462,8 @@ void C_arg::print_usage() {
    std::cout << "     -notrim: Turn trimming off." << std::endl;
    std::cout << "     -seed <integer>: Set a seed for random number generation." << std::endl;
    std::cout << "          Default: " << DEFAULT_SEED << "." << std::endl;
+   std::cout << "     -smpthread <integer>: Number of threads used in a SMP node." << std::endl;
+   std::cout << "          Default: number of cores in each SMP node." << std::endl;
    std::cout << std::endl;
    std::cout << "3. EXAMPLES" << std::endl;
    std::cout << "     1) PAIRED INPUT READS" << std::endl;

@@ -170,10 +170,10 @@ void C_correct_errors::program_kmers(const C_arg& c_inst_args, C_time& c_inst_ti
             // program the k-mer into the bloom filter
             for (unsigned short int it_hash_func = 0; it_hash_func < num_hash_func; it_hash_func++) {
                MurmurHash3_x64_128(kmer_string.c_str(), kmer_length, hash_seed[it_hash_func], hash);
-           
+
                original_index = hash[0] % bit_vector_width;
                bit_index      = original_index % BITS_PER_CHAR;
-           
+
                #pragma omp atomic
                bit_vector[original_index / BITS_PER_CHAR] |= BIT_MASK[bit_index];
             }
@@ -455,304 +455,471 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
       std::cout << "Merging output files" << std::endl;
    }
 
+   //----------------------------------------------------------------------
    // multiple nodes
+   //----------------------------------------------------------------------
    if (size_node > 1) {
       //----------------------------------------------------------------------
       // paired-end output file
       //----------------------------------------------------------------------
       if (c_inst_args.paired_read == true) {
-         // variables
-         MPI_File f_out;
+         if (c_inst_args.gzipped_output_read) {
+            /*
+            std::ifstream f_in;
+            f_in.open("in.txt");
 
-         MPI_Offset write_offset;
+            std::ofstream f_out;
+            f_out.open("in.txt.gz", std::ofstream::binary);
 
-         MPI_Status status;
+            boost::iostreams::filtering_streambuf<boost::iostreams::input> f_in_filter;
+            f_in_filter.push(boost::iostreams::gzip_compressor());
+            f_in_filter.push(f_in);
+            boost::iostreams::copy(f_in_filter, f_out);
+            */
 
-         int err; 
 
-         std::string node_text;
-         std::string tmp_file;
 
-         std::size_t total_size;
-         std::size_t num_buffers;
-         std::size_t residue;
 
-         boost::iostreams::mapped_file_source mmap;
 
-         std::stringstream rank_node_stream;
 
-         //
-         // forward file
-         //
-         // open output files
-         err = MPI_File_open(comm_node, c_inst_args.corrected_read_file_name1.c_str(), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &f_out);
-         if (err != MPI_SUCCESS) {
-            std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name1 << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 208);
+
+            // compressions cannot be parallelized
+            if (rank_node == 0) {
+               // variables
+               std::string node_text;
+               std::string tmp_file;
+
+               std::stringstream rank_node_stream;
+
+               std::ifstream f_in;
+
+               std::ofstream f_out;
+
+               boost::iostreams::filtering_streambuf<boost::iostreams::input> f_in_filter;
+
+               //
+               // forward file
+               //
+               // open output files
+               f_out.open(c_inst_args.corrected_read_file_name1.c_str(), std::ofstream::binary);
+               if (!f_out.is_open()) {
+                  std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name1 << std::endl << std::endl;
+                  MPI_Abort(MPI_COMM_WORLD, 208);
+               }
+
+               for (int it_rank = 0; it_rank < rank_node; it_rank++) {
+                  // open a partial output file
+                  rank_node_stream.str(std::string());
+                  rank_node_stream.clear();
+                  rank_node_stream << std::setw(5) << std::setfill('0') << rank_node;
+                  node_text = rank_node_stream.str();
+                  tmp_file  = c_inst_args.corrected_read_file_name1 + '.' + node_text;
+
+                  f_in.open(tmp_file.c_str());
+                  if (!f_out.is_open()) {
+                     std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
+                     MPI_Abort(MPI_COMM_WORLD, 208);
+                  }
+
+                  f_in_filter.reset();
+                  f_in_filter.push(boost::iostreams::gzip_compressor());
+                  f_in_filter.push(f_in);
+
+                  // write compressed temporarily filed to the output
+                  boost::iostreams::copy(f_in_filter, f_out);
+
+                  // remove the temporary file
+                  boost::filesystem::path path_tmp1(tmp_file);
+                  boost::filesystem::remove(path_tmp1);
+               }
+
+               //
+               // reverse file
+               //
+               // open output files
+               f_out.open(c_inst_args.corrected_read_file_name1.c_str(), std::ofstream::binary);
+               if (!f_out.is_open()) {
+                  std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name1 << std::endl << std::endl;
+                  MPI_Abort(MPI_COMM_WORLD, 208);
+               }
+
+               for (int it_rank = 0; it_rank < rank_node; it_rank++) {
+                  // open a partial output file
+                  rank_node_stream.str(std::string());
+                  rank_node_stream.clear();
+                  rank_node_stream << std::setw(5) << std::setfill('0') << rank_node;
+                  node_text = rank_node_stream.str();
+                  tmp_file  = c_inst_args.corrected_read_file_name1 + '.' + node_text;
+
+                  f_in.open(tmp_file.c_str());
+                  if (!f_out.is_open()) {
+                     std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
+                     MPI_Abort(MPI_COMM_WORLD, 208);
+                  }
+
+                  f_in_filter.reset();
+                  f_in_filter.push(boost::iostreams::gzip_compressor());
+                  f_in_filter.push(f_in);
+
+                  // write compressed temporarily filed to the output
+                  boost::iostreams::copy(f_in_filter, f_out);
+
+                  // remove the temporary file
+                  boost::filesystem::path path_tmp1(tmp_file);
+                  boost::filesystem::remove(path_tmp1);
+               }
+            }
          }
+         else {
+            // variables
+            MPI_File f_out;
 
-         // calculate the output offset
-         write_offset = 0;
+            MPI_Offset write_offset;
 
-         for (int it_nodes = 0; it_nodes < rank_node; it_nodes++) {
-            // set temporary file names
+            MPI_Status status;
+
+            int err;
+
+            std::string node_text;
+            std::string tmp_file;
+
+            std::size_t total_size;
+            std::size_t num_buffers;
+            std::size_t residue;
+
+            boost::iostreams::mapped_file_source mmap;
+
+            std::stringstream rank_node_stream;
+
+            //
+            // forward file
+            //
+            // open output files
+            err = MPI_File_open(comm_node, c_inst_args.corrected_read_file_name1.c_str(), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &f_out);
+            if (err != MPI_SUCCESS) {
+               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name1 << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 208);
+            }
+
+            // calculate the output offset
+            write_offset = 0;
+
+            for (int it_nodes = 0; it_nodes < rank_node; it_nodes++) {
+               // set temporary file names
+               rank_node_stream.str(std::string());
+               rank_node_stream.clear();
+               rank_node_stream << std::setw(5) << std::setfill('0') << it_nodes;
+               node_text = rank_node_stream.str();
+               tmp_file  = c_inst_args.corrected_read_file_name1 + '.' + node_text;
+
+               // add the size of each file
+               mmap.open(tmp_file.c_str());
+               if (!mmap.is_open()) {
+                  std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
+               }
+               write_offset += mmap.size();
+               mmap.close();
+            }
+
+            // open a partial output file
             rank_node_stream.str(std::string());
             rank_node_stream.clear();
-            rank_node_stream << std::setw(5) << std::setfill('0') << it_nodes;
+            rank_node_stream << std::setw(5) << std::setfill('0') << rank_node;
             node_text = rank_node_stream.str();
             tmp_file  = c_inst_args.corrected_read_file_name1 + '.' + node_text;
 
-            // add the size of each file
+            // find out the total size of the file
             mmap.open(tmp_file.c_str());
             if (!mmap.is_open()) {
                std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
             }
-            write_offset += mmap.size();
+            total_size = mmap.size();
             mmap.close();
-         }
 
-         // open a partial output file
-         rank_node_stream.str(std::string());
-         rank_node_stream.clear();
-         rank_node_stream << std::setw(5) << std::setfill('0') << rank_node;
-         node_text = rank_node_stream.str();
-         tmp_file  = c_inst_args.corrected_read_file_name1 + '.' + node_text;
+            num_buffers = total_size / MMAP_FILE_SIZE;
+            residue     = total_size % MMAP_FILE_SIZE;
 
-         // find out the total size of the file
-         mmap.open(tmp_file.c_str());
-         if (!mmap.is_open()) {
-            std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
-         }
-         total_size = mmap.size();
-         mmap.close();
+            // iterate the file
+            for (std::size_t it_buffer = 0; it_buffer < num_buffers; it_buffer++) {
+               // open(<file name>, <length>, <offset>)
+               mmap.open(tmp_file.c_str(), MMAP_FILE_SIZE, it_buffer * MMAP_FILE_SIZE);
+               if (!mmap.is_open()) {
+                  std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
+               }
+               MPI_File_write_at(f_out, write_offset, mmap.data(), MMAP_FILE_SIZE, MPI_CHAR, &status);
+               mmap.close();
 
-         num_buffers = total_size / MMAP_FILE_SIZE;
-         residue     = total_size % MMAP_FILE_SIZE;
+               write_offset += MMAP_FILE_SIZE;
+            }
 
-         // iterate the file
-         for (std::size_t it_buffer = 0; it_buffer < num_buffers; it_buffer++) {
+            // residue lines
             // open(<file name>, <length>, <offset>)
-            mmap.open(tmp_file.c_str(), MMAP_FILE_SIZE, it_buffer * MMAP_FILE_SIZE);
+            mmap.open(tmp_file.c_str(), residue, num_buffers * MMAP_FILE_SIZE);
             if (!mmap.is_open()) {
                std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
             }
-            MPI_File_write_at(f_out, write_offset, mmap.data(), MMAP_FILE_SIZE, MPI_CHAR, &status);
+            MPI_File_write_at(f_out, write_offset, mmap.data(), residue, MPI_CHAR, &status);
             mmap.close();
 
-            write_offset += MMAP_FILE_SIZE;
-         }
+            MPI_File_close(&f_out);
 
-         // residue lines
-         // open(<file name>, <length>, <offset>)
-         mmap.open(tmp_file.c_str(), residue, num_buffers * MMAP_FILE_SIZE);
-         if (!mmap.is_open()) {
-            std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
-         }
-         MPI_File_write_at(f_out, write_offset, mmap.data(), residue, MPI_CHAR, &status);
-         mmap.close();
+            // remove the temporary file
+            boost::filesystem::path path_tmp1(tmp_file);
+            boost::filesystem::remove(path_tmp1);
 
-         MPI_File_close(&f_out);
+            //
+            // reverse file
+            //
+            // open output files
+            err = MPI_File_open(comm_node, c_inst_args.corrected_read_file_name2.c_str(), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &f_out);
+            if (err != MPI_SUCCESS) {
+               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name2 << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 209);
+            }
 
-         // remove the temporary file
-         boost::filesystem::path path_tmp1(tmp_file);
-         boost::filesystem::remove(path_tmp1);
+            // calculate the output offset
+            write_offset = 0;
 
-         //
-         // reverse file
-         //
-         // open output files
-         err = MPI_File_open(comm_node, c_inst_args.corrected_read_file_name2.c_str(), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &f_out);
-         if (err != MPI_SUCCESS) {
-            std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name2 << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 209);
-         }
+            for (int it_nodes = 0; it_nodes < rank_node; it_nodes++) {
+               // set temporary file names
+               rank_node_stream.str(std::string());
+               rank_node_stream.clear();
+               rank_node_stream << std::setw(5) << std::setfill('0') << it_nodes;
+               node_text = rank_node_stream.str();
+               tmp_file  = c_inst_args.corrected_read_file_name2 + '.' + node_text;
 
-         // calculate the output offset
-         write_offset = 0;
+               // add the size of each file
+               mmap.open(tmp_file.c_str());
+               if (!mmap.is_open()) {
+                  std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
+               }
+               write_offset += mmap.size();
+               mmap.close();
+            }
 
-         for (int it_nodes = 0; it_nodes < rank_node; it_nodes++) {
-            // set temporary file names
+            // open a partial output file
             rank_node_stream.str(std::string());
             rank_node_stream.clear();
-            rank_node_stream << std::setw(5) << std::setfill('0') << it_nodes;
+            rank_node_stream << std::setw(5) << std::setfill('0') << rank_node;
             node_text = rank_node_stream.str();
             tmp_file  = c_inst_args.corrected_read_file_name2 + '.' + node_text;
 
-            // add the size of each file
+            // find out the total size of the file
             mmap.open(tmp_file.c_str());
             if (!mmap.is_open()) {
                std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
             }
-            write_offset += mmap.size();
+            total_size = mmap.size();
             mmap.close();
-         }
 
-         // open a partial output file
-         rank_node_stream.str(std::string());
-         rank_node_stream.clear();
-         rank_node_stream << std::setw(5) << std::setfill('0') << rank_node;
-         node_text = rank_node_stream.str();
-         tmp_file  = c_inst_args.corrected_read_file_name2 + '.' + node_text;
+            num_buffers = total_size / MMAP_FILE_SIZE;
+            residue     = total_size % MMAP_FILE_SIZE;
 
-         // find out the total size of the file
-         mmap.open(tmp_file.c_str());
-         if (!mmap.is_open()) {
-            std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
-         }
-         total_size = mmap.size();
-         mmap.close();
+            // iterate the file
+            for (std::size_t it_buffer = 0; it_buffer < num_buffers; it_buffer++) {
+               // open(<file name>, <length>, <offset>)
+               mmap.open(tmp_file.c_str(), MMAP_FILE_SIZE, it_buffer * MMAP_FILE_SIZE);
+               if (!mmap.is_open()) {
+                  std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
+               }
+               MPI_File_write_at(f_out, write_offset, mmap.data(), MMAP_FILE_SIZE, MPI_CHAR, &status);
+               mmap.close();
 
-         num_buffers = total_size / MMAP_FILE_SIZE;
-         residue     = total_size % MMAP_FILE_SIZE;
+               write_offset += MMAP_FILE_SIZE;
+            }
 
-         // iterate the file
-         for (std::size_t it_buffer = 0; it_buffer < num_buffers; it_buffer++) {
+            // residue lines
             // open(<file name>, <length>, <offset>)
-            mmap.open(tmp_file.c_str(), MMAP_FILE_SIZE, it_buffer * MMAP_FILE_SIZE);
+            mmap.open(tmp_file.c_str(), residue, num_buffers * MMAP_FILE_SIZE);
             if (!mmap.is_open()) {
                std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
             }
-            MPI_File_write_at(f_out, write_offset, mmap.data(), MMAP_FILE_SIZE, MPI_CHAR, &status);
+            MPI_File_write_at(f_out, write_offset, mmap.data(), residue, MPI_CHAR, &status);
             mmap.close();
 
-            write_offset += MMAP_FILE_SIZE;
+            MPI_File_close(&f_out);
+
+            // remove the temporary file
+            boost::filesystem::path path_tmp2(tmp_file);
+            boost::filesystem::remove(path_tmp2);
          }
-
-         // residue lines
-         // open(<file name>, <length>, <offset>)
-         mmap.open(tmp_file.c_str(), residue, num_buffers * MMAP_FILE_SIZE);
-         if (!mmap.is_open()) {
-            std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
-         }
-         MPI_File_write_at(f_out, write_offset, mmap.data(), residue, MPI_CHAR, &status);
-         mmap.close();
-
-         MPI_File_close(&f_out);
-
-         // remove the temporary file
-         boost::filesystem::path path_tmp2(tmp_file);
-         boost::filesystem::remove(path_tmp2);
       }
       //----------------------------------------------------------------------
       // single-end output file
       //----------------------------------------------------------------------
       else {
-         // open output files
-         MPI_File f_out;
+         if (c_inst_args.gzipped_output_read) {
 
-         int err; 
-         err = MPI_File_open(comm_node, c_inst_args.corrected_read_file_name.c_str(), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &f_out);
-         if (err != MPI_SUCCESS) {
-            std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 210);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
          }
+         else {
+            // open output files
+            MPI_File f_out;
 
-         // calculate the output offset
-         MPI_Offset write_offset(0);
+            int err;
+            err = MPI_File_open(comm_node, c_inst_args.corrected_read_file_name.c_str(), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &f_out);
+            if (err != MPI_SUCCESS) {
+               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 210);
+            }
 
-         boost::iostreams::mapped_file_source mmap;
+            // calculate the output offset
+            MPI_Offset write_offset(0);
 
-         std::stringstream rank_node_stream;
+            boost::iostreams::mapped_file_source mmap;
 
-         std::string node_text;
-         std::string tmp_file;
+            std::stringstream rank_node_stream;
 
-         for (int it_nodes = 0; it_nodes < rank_node; it_nodes++) {
-            // set temporary file names
+            std::string node_text;
+            std::string tmp_file;
+
+            for (int it_nodes = 0; it_nodes < rank_node; it_nodes++) {
+               // set temporary file names
+               rank_node_stream.str(std::string());
+               rank_node_stream.clear();
+               rank_node_stream << std::setw(5) << std::setfill('0') << it_nodes;
+               node_text = rank_node_stream.str();
+               tmp_file  = c_inst_args.corrected_read_file_name + '.' + node_text;
+
+               // add the size of each file
+               mmap.open(tmp_file.c_str());
+               if (!mmap.is_open()) {
+                  std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
+               }
+               write_offset += mmap.size();
+               mmap.close();
+            }
+
+            // open a partial output file
+            MPI_Status status;
+
             rank_node_stream.str(std::string());
             rank_node_stream.clear();
-            rank_node_stream << std::setw(5) << std::setfill('0') << it_nodes;
+            rank_node_stream << std::setw(5) << std::setfill('0') << rank_node;
             node_text = rank_node_stream.str();
             tmp_file  = c_inst_args.corrected_read_file_name + '.' + node_text;
 
-            // add the size of each file
+
+            // find out the total size of the file
             mmap.open(tmp_file.c_str());
             if (!mmap.is_open()) {
                std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
             }
-            write_offset += mmap.size();
+            std::size_t total_size(mmap.size());
             mmap.close();
-         }
 
-         // open a partial output file
-         MPI_Status status;
+            std::size_t num_buffers(total_size / MMAP_FILE_SIZE);
+            std::size_t residue(total_size % MMAP_FILE_SIZE);
 
-         rank_node_stream.str(std::string());
-         rank_node_stream.clear();
-         rank_node_stream << std::setw(5) << std::setfill('0') << rank_node;
-         node_text = rank_node_stream.str();
-         tmp_file  = c_inst_args.corrected_read_file_name + '.' + node_text;
+            // iterate the file
+            for (std::size_t it_buffer = 0; it_buffer < num_buffers; it_buffer++) {
+               // open(<file name>, <length>, <offset>)
+               mmap.open(tmp_file.c_str(), MMAP_FILE_SIZE, it_buffer * MMAP_FILE_SIZE);
+               if (!mmap.is_open()) {
+                  std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
+               }
+               MPI_File_write_at(f_out, write_offset, mmap.data(), MMAP_FILE_SIZE, MPI_CHAR, &status);
+               mmap.close();
 
+               write_offset += MMAP_FILE_SIZE;
+            }
 
-         // find out the total size of the file
-         mmap.open(tmp_file.c_str());
-         if (!mmap.is_open()) {
-            std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
-         }
-         std::size_t total_size(mmap.size());
-         mmap.close();
-
-         std::size_t num_buffers(total_size / MMAP_FILE_SIZE);
-         std::size_t residue(total_size % MMAP_FILE_SIZE);
-
-         // iterate the file
-         for (std::size_t it_buffer = 0; it_buffer < num_buffers; it_buffer++) {
+            // residue lines
             // open(<file name>, <length>, <offset>)
-            mmap.open(tmp_file.c_str(), MMAP_FILE_SIZE, it_buffer * MMAP_FILE_SIZE);
+            mmap.open(tmp_file.c_str(), residue, num_buffers * MMAP_FILE_SIZE);
             if (!mmap.is_open()) {
                std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
             }
-            MPI_File_write_at(f_out, write_offset, mmap.data(), MMAP_FILE_SIZE, MPI_CHAR, &status);
+            MPI_File_write_at(f_out, write_offset, mmap.data(), residue, MPI_CHAR, &status);
             mmap.close();
 
-            write_offset += MMAP_FILE_SIZE;
+            MPI_File_close(&f_out);
+
+            // remove the temporary file
+            boost::filesystem::path path_tmp(tmp_file);
+            boost::filesystem::remove(path_tmp);
          }
-
-         // residue lines
-         // open(<file name>, <length>, <offset>)
-         mmap.open(tmp_file.c_str(), residue, num_buffers * MMAP_FILE_SIZE);
-         if (!mmap.is_open()) {
-            std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
-         }
-         MPI_File_write_at(f_out, write_offset, mmap.data(), residue, MPI_CHAR, &status);
-         mmap.close();
-
-         MPI_File_close(&f_out);
-
-         // remove the temporary file
-         boost::filesystem::path path_tmp(tmp_file);
-         boost::filesystem::remove(path_tmp);
       } // single-end output file
    }
+   //----------------------------------------------------------------------
    // only one node
+   //----------------------------------------------------------------------
    else {
+      //----------------------------------------------------------------------
       // paired-end output file
+      //----------------------------------------------------------------------
       if (c_inst_args.paired_read == true) {
-         boost::filesystem::path path_source1(c_inst_args.corrected_read_file_name1 + '.' + rank_node_text);
-         boost::filesystem::path path_source2(c_inst_args.corrected_read_file_name2 + '.' + rank_node_text);
-         boost::filesystem::path path_destination1(c_inst_args.corrected_read_file_name1);
-         boost::filesystem::path path_destination2(c_inst_args.corrected_read_file_name2);
+         if (c_inst_args.gzipped_output_read) {
 
-         if (boost::filesystem::exists(path_destination1)) {
-            boost::filesystem::remove(path_destination1);
-         }
-         if (boost::filesystem::exists(path_destination2)) {
-            boost::filesystem::remove(path_destination2);
-         }
 
-         boost::filesystem::rename(path_source1, path_destination1);
-         boost::filesystem::rename(path_source2, path_destination2);
+
+
+
+
+
+
+
+         }
+         else {
+            boost::filesystem::path path_source1(c_inst_args.corrected_read_file_name1 + '.' + rank_node_text);
+            boost::filesystem::path path_source2(c_inst_args.corrected_read_file_name2 + '.' + rank_node_text);
+            boost::filesystem::path path_destination1(c_inst_args.corrected_read_file_name1);
+            boost::filesystem::path path_destination2(c_inst_args.corrected_read_file_name2);
+
+            if (boost::filesystem::exists(path_destination1)) {
+               boost::filesystem::remove(path_destination1);
+            }
+            if (boost::filesystem::exists(path_destination2)) {
+               boost::filesystem::remove(path_destination2);
+            }
+
+            boost::filesystem::rename(path_source1, path_destination1);
+            boost::filesystem::rename(path_source2, path_destination2);
+         }
       }
+      //----------------------------------------------------------------------
       // single-end output file
+      //----------------------------------------------------------------------
       else {
-         boost::filesystem::path path_source(c_inst_args.corrected_read_file_name + '.' + rank_node_text);
-         boost::filesystem::path path_destination(c_inst_args.corrected_read_file_name);
+         if (c_inst_args.gzipped_output_read) {
 
-         if (boost::filesystem::exists(path_destination)) {
-            boost::filesystem::remove(path_destination);
+
+
+
+
+
+
+
+
+
+
+
+
+
          }
+         else {
+            boost::filesystem::path path_source(c_inst_args.corrected_read_file_name + '.' + rank_node_text);
+            boost::filesystem::path path_destination(c_inst_args.corrected_read_file_name);
 
-         boost::filesystem::rename(path_source, path_destination);
+            if (boost::filesystem::exists(path_destination)) {
+               boost::filesystem::remove(path_destination);
+            }
+
+            boost::filesystem::rename(path_source, path_destination);
+         }
       }
    }
 
@@ -982,7 +1149,7 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_unzipped(const C_arg
                if (num_reads_local == num_reads_vector[rank_node]) {
                   all_reads  = true;
                   keep_going = false;
-               }    
+               }
 
                // read_vector is full
                if (read_vector_index == read_block_size) {
@@ -1549,7 +1716,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_unzipped(const C_arg
                if (num_reads_local == num_reads_vector1[rank_node]) {
                   all_reads  = true;
                   keep_going = false;
-               }    
+               }
 
                // read_vector is full
                if (read_vector_index == read_block_size) {
@@ -1989,7 +2156,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_unzipped(const C_arg
                if (num_reads_local == num_reads_vector2[rank_node]) {
                   all_reads  = true;
                   keep_going = false;
-               }    
+               }
 
                // read_vector is full
                if (read_vector_index == read_block_size) {
@@ -6384,7 +6551,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
    if (!f_read.is_open()) {
       std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name1 << std::endl << std::endl;
       MPI_Abort(MPI_COMM_WORLD, 214);
-   }   
+   }
 
    // set a stream filter for gzipped files
    f_read_filter.reset();
@@ -6400,19 +6567,19 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
    // the current node rank == 0
    if (rank_node == 0) {
       end_read_prev_rank = 0;
-   }   
+   }
    // the current node rank > 0
    else {
       // if no read is assigned to this node
       // finding a start point is not needed
       if (num_reads_vector1[rank_node] == 0) {
          end_read_prev_rank = 0;
-      }   
+      }
       else {
          for (int it_rank = 0; it_rank < rank_node; it_rank++) {
             end_read_prev_rank += num_reads_vector1[it_rank];
          }
-      }   
+      }
    }
 
    // skip unnecessary reads
@@ -6791,7 +6958,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
    if (!f_read.is_open()) {
       std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name2 << std::endl << std::endl;
       MPI_Abort(MPI_COMM_WORLD, 214);
-   }   
+   }
 
    // set a stream filter for gzipped files
    f_read_filter.reset();
@@ -6807,19 +6974,19 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
    // the current node rank == 0
    if (rank_node == 0) {
       end_read_prev_rank = 0;
-   }   
+   }
    // the current node rank > 0
    else {
       // if no read is assigned to this node
       // finding a start point is not needed
       if (num_reads_vector2[rank_node] == 0) {
          end_read_prev_rank = 0;
-      }   
+      }
       else {
          for (int it_rank = 0; it_rank < rank_node; it_rank++) {
             end_read_prev_rank += num_reads_vector2[it_rank];
          }
-      }   
+      }
    }
 
    // skip unnecessary reads
@@ -6828,7 +6995,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
       std::getline(f_read_filter, buffer_not_needed);
       std::getline(f_read_filter, buffer_not_needed);
       std::getline(f_read_filter, buffer_not_needed);
-   }   
+   }
 
    // process reads
    for (std::size_t it_read_order = 0; it_read_order < num_reads_vector2[rank_node]; it_read_order++) {
