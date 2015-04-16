@@ -463,26 +463,9 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
       // paired-end output file
       //----------------------------------------------------------------------
       if (c_inst_args.paired_read == true) {
+         // gzip outputs
          if (c_inst_args.gzipped_output_read) {
-            /*
-            std::ifstream f_in;
-            f_in.open("in.txt");
-
-            std::ofstream f_out;
-            f_out.open("in.txt.gz", std::ofstream::binary);
-
-            boost::iostreams::filtering_streambuf<boost::iostreams::input> f_in_filter;
-            f_in_filter.push(boost::iostreams::gzip_compressor());
-            f_in_filter.push(f_in);
-            boost::iostreams::copy(f_in_filter, f_out);
-            */
-
-
-
-
-
-
-
+            // only rank 0 does this
             // compressions cannot be parallelized
             if (rank_node == 0) {
                // variables
@@ -507,11 +490,11 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
                   MPI_Abort(MPI_COMM_WORLD, 208);
                }
 
-               for (int it_rank = 0; it_rank < rank_node; it_rank++) {
+               for (int it_rank = 0; it_rank < size_node; it_rank++) {
                   // open a partial output file
                   rank_node_stream.str(std::string());
                   rank_node_stream.clear();
-                  rank_node_stream << std::setw(5) << std::setfill('0') << rank_node;
+                  rank_node_stream << std::setw(5) << std::setfill('0') << it_rank;
                   node_text = rank_node_stream.str();
                   tmp_file  = c_inst_args.corrected_read_file_name1 + '.' + node_text;
 
@@ -527,6 +510,8 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
 
                   // write compressed temporarily filed to the output
                   boost::iostreams::copy(f_in_filter, f_out);
+
+                  f_in.close();
 
                   // remove the temporary file
                   boost::filesystem::path path_tmp1(tmp_file);
@@ -543,13 +528,13 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
                   MPI_Abort(MPI_COMM_WORLD, 208);
                }
 
-               for (int it_rank = 0; it_rank < rank_node; it_rank++) {
+               for (int it_rank = 0; it_rank < size_node; it_rank++) {
                   // open a partial output file
                   rank_node_stream.str(std::string());
                   rank_node_stream.clear();
-                  rank_node_stream << std::setw(5) << std::setfill('0') << rank_node;
+                  rank_node_stream << std::setw(5) << std::setfill('0') << it_rank;
                   node_text = rank_node_stream.str();
-                  tmp_file  = c_inst_args.corrected_read_file_name1 + '.' + node_text;
+                  tmp_file  = c_inst_args.corrected_read_file_name2 + '.' + node_text;
 
                   f_in.open(tmp_file.c_str());
                   if (!f_out.is_open()) {
@@ -564,12 +549,17 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
                   // write compressed temporarily filed to the output
                   boost::iostreams::copy(f_in_filter, f_out);
 
+                  f_in.close();
+
                   // remove the temporary file
-                  boost::filesystem::path path_tmp1(tmp_file);
-                  boost::filesystem::remove(path_tmp1);
+                  boost::filesystem::path path_tmp2(tmp_file);
+                  boost::filesystem::remove(path_tmp2);
                }
+
+               f_out.close();
             }
          }
+         // do not gzip outputs
          else {
             // variables
             MPI_File f_out;
@@ -748,23 +738,58 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
       // single-end output file
       //----------------------------------------------------------------------
       else {
+         // gzip outputs
          if (c_inst_args.gzipped_output_read) {
+            // only rank 0 does this
+            // compressions cannot be parallelized
+            if (rank_node == 0) {
+               // variables
+               std::string node_text;
+               std::string tmp_file;
 
+               std::stringstream rank_node_stream;
 
+               std::ifstream f_in;
 
+               std::ofstream f_out;
 
+               boost::iostreams::filtering_streambuf<boost::iostreams::input> f_in_filter;
 
+               // open output files
+               f_out.open(c_inst_args.corrected_read_file_name.c_str(), std::ofstream::binary);
+               if (!f_out.is_open()) {
+                  std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name << std::endl << std::endl;
+                  MPI_Abort(MPI_COMM_WORLD, 208);
+               }
 
+               for (int it_rank = 0; it_rank < size_node; it_rank++) {
+                  // open a partial output file
+                  rank_node_stream.str(std::string());
+                  rank_node_stream.clear();
+                  rank_node_stream << std::setw(5) << std::setfill('0') << it_rank;
+                  node_text = rank_node_stream.str();
+                  tmp_file  = c_inst_args.corrected_read_file_name + '.' + node_text;
 
+                  f_in.open(tmp_file.c_str());
+                  if (!f_out.is_open()) {
+                     std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
+                     MPI_Abort(MPI_COMM_WORLD, 208);
+                  }
 
+                  f_in_filter.reset();
+                  f_in_filter.push(boost::iostreams::gzip_compressor());
+                  f_in_filter.push(f_in);
 
+                  // write compressed temporarily filed to the output
+                  boost::iostreams::copy(f_in_filter, f_out);
 
-
-
-
-
-
+                  // remove the temporary file
+                  boost::filesystem::path path_tmp(tmp_file);
+                  boost::filesystem::remove(path_tmp);
+               }
+            }
          }
+         // do not gzip outputs
          else {
             // open output files
             MPI_File f_out;
@@ -862,17 +887,69 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
       // paired-end output file
       //----------------------------------------------------------------------
       if (c_inst_args.paired_read == true) {
+         // gzip outputs
          if (c_inst_args.gzipped_output_read) {
+            std::string file_name;
 
+            std::ifstream f_in;
 
+            std::ofstream f_out;
 
+            boost::iostreams::filtering_streambuf<boost::iostreams::input> f_in_filter;
 
+            // forward
+            file_name = c_inst_args.corrected_read_file_name1 + '.' + rank_node_text;
 
+            f_in.open(file_name.c_str());
+            if (!f_in.is_open()) {
+               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name1 << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 208);
+            }
 
+            f_out.open(c_inst_args.corrected_read_file_name1.c_str(), std::ofstream::binary);
+            if (!f_out.is_open()) {
+               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name1 << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 208);
+            }
 
+            f_in_filter.reset();
+            f_in_filter.push(boost::iostreams::gzip_compressor());
+            f_in_filter.push(f_in);
+            boost::iostreams::copy(f_in_filter, f_out);
 
+            f_in.close();
+            f_out.close();
 
+            boost::filesystem::path path_source1(c_inst_args.corrected_read_file_name1 + '.' + rank_node_text);
+            boost::filesystem::remove(path_source1);
+
+            // reverse
+            file_name = c_inst_args.corrected_read_file_name2 + '.' + rank_node_text;
+
+            f_in.open(file_name.c_str());
+            if (!f_in.is_open()) {
+               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name2 << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 208);
+            }
+
+            f_out.open(c_inst_args.corrected_read_file_name2.c_str(), std::ofstream::binary);
+            if (!f_out.is_open()) {
+               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name2 << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 208);
+            }
+
+            f_in_filter.reset();
+            f_in_filter.push(boost::iostreams::gzip_compressor());
+            f_in_filter.push(f_in);
+            boost::iostreams::copy(f_in_filter, f_out);
+
+            f_in.close();
+            f_out.close();
+
+            boost::filesystem::path path_source2(c_inst_args.corrected_read_file_name2 + '.' + rank_node_text);
+            boost::filesystem::remove(path_source2);
          }
+         // do not gzip outputs
          else {
             boost::filesystem::path path_source1(c_inst_args.corrected_read_file_name1 + '.' + rank_node_text);
             boost::filesystem::path path_source2(c_inst_args.corrected_read_file_name2 + '.' + rank_node_text);
@@ -894,22 +971,42 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
       // single-end output file
       //----------------------------------------------------------------------
       else {
+         // gzip outputs
          if (c_inst_args.gzipped_output_read) {
+            std::string file_name;
 
+            std::ifstream f_in;
 
+            std::ofstream f_out;
 
+            boost::iostreams::filtering_streambuf<boost::iostreams::input> f_in_filter;
 
+            file_name = c_inst_args.corrected_read_file_name + '.' + rank_node_text;
 
+            f_in.open(file_name.c_str());
+            if (!f_in.is_open()) {
+               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 208);
+            }
 
+            f_out.open(c_inst_args.corrected_read_file_name.c_str(), std::ofstream::binary);
+            if (!f_out.is_open()) {
+               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 208);
+            }
 
+            f_in_filter.reset();
+            f_in_filter.push(boost::iostreams::gzip_compressor());
+            f_in_filter.push(f_in);
+            boost::iostreams::copy(f_in_filter, f_out);
 
+            f_in.close();
+            f_out.close();
 
-
-
-
-
-
+            boost::filesystem::path path_source(c_inst_args.corrected_read_file_name + '.' + rank_node_text);
+            boost::filesystem::remove(path_source);
          }
+         // do not gzip outputs
          else {
             boost::filesystem::path path_source(c_inst_args.corrected_read_file_name + '.' + rank_node_text);
             boost::filesystem::path path_destination(c_inst_args.corrected_read_file_name);
