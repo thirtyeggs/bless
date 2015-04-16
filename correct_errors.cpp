@@ -505,7 +505,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
                   }
 
                   f_in_filter.reset();
-                  f_in_filter.push(boost::iostreams::gzip_compressor());
+                  f_in_filter.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_speed)));
                   f_in_filter.push(f_in);
 
                   // write compressed temporarily filed to the output
@@ -543,7 +543,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
                   }
 
                   f_in_filter.reset();
-                  f_in_filter.push(boost::iostreams::gzip_compressor());
+                  f_in_filter.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_speed)));
                   f_in_filter.push(f_in);
 
                   // write compressed temporarily filed to the output
@@ -777,7 +777,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
                   }
 
                   f_in_filter.reset();
-                  f_in_filter.push(boost::iostreams::gzip_compressor());
+                  f_in_filter.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_speed)));
                   f_in_filter.push(f_in);
 
                   // write compressed temporarily filed to the output
@@ -913,7 +913,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
             }
 
             f_in_filter.reset();
-            f_in_filter.push(boost::iostreams::gzip_compressor());
+            f_in_filter.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_speed)));
             f_in_filter.push(f_in);
             boost::iostreams::copy(f_in_filter, f_out);
 
@@ -939,7 +939,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
             }
 
             f_in_filter.reset();
-            f_in_filter.push(boost::iostreams::gzip_compressor());
+            f_in_filter.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_speed)));
             f_in_filter.push(f_in);
             boost::iostreams::copy(f_in_filter, f_out);
 
@@ -996,7 +996,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
             }
 
             f_in_filter.reset();
-            f_in_filter.push(boost::iostreams::gzip_compressor());
+            f_in_filter.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_speed)));
             f_in_filter.push(f_in);
             boost::iostreams::copy(f_in_filter, f_out);
 
