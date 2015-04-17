@@ -501,7 +501,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
                   f_in.open(tmp_file.c_str());
                   if (!f_out.is_open()) {
                      std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
-                     MPI_Abort(MPI_COMM_WORLD, 208);
+                     MPI_Abort(MPI_COMM_WORLD, 209);
                   }
 
                   f_in_filter.reset();
@@ -522,10 +522,10 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
                // reverse file
                //
                // open output files
-               f_out.open(c_inst_args.corrected_read_file_name1.c_str(), std::ofstream::binary);
+               f_out.open(c_inst_args.corrected_read_file_name2.c_str(), std::ofstream::binary);
                if (!f_out.is_open()) {
-                  std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name1 << std::endl << std::endl;
-                  MPI_Abort(MPI_COMM_WORLD, 208);
+                  std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name2 << std::endl << std::endl;
+                  MPI_Abort(MPI_COMM_WORLD, 210);
                }
 
                for (int it_rank = 0; it_rank < size_node; it_rank++) {
@@ -539,7 +539,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
                   f_in.open(tmp_file.c_str());
                   if (!f_out.is_open()) {
                      std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
-                     MPI_Abort(MPI_COMM_WORLD, 208);
+                     MPI_Abort(MPI_COMM_WORLD, 211);
                   }
 
                   f_in_filter.reset();
@@ -588,7 +588,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
             err = MPI_File_open(comm_node, c_inst_args.corrected_read_file_name1.c_str(), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &f_out);
             if (err != MPI_SUCCESS) {
                std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name1 << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 208);
+               MPI_Abort(MPI_COMM_WORLD, 212);
             }
 
             // calculate the output offset
@@ -664,7 +664,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
             err = MPI_File_open(comm_node, c_inst_args.corrected_read_file_name2.c_str(), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &f_out);
             if (err != MPI_SUCCESS) {
                std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name2 << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 209);
+               MPI_Abort(MPI_COMM_WORLD, 213);
             }
 
             // calculate the output offset
@@ -759,7 +759,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
                f_out.open(c_inst_args.corrected_read_file_name.c_str(), std::ofstream::binary);
                if (!f_out.is_open()) {
                   std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name << std::endl << std::endl;
-                  MPI_Abort(MPI_COMM_WORLD, 208);
+                  MPI_Abort(MPI_COMM_WORLD, 214);
                }
 
                for (int it_rank = 0; it_rank < size_node; it_rank++) {
@@ -773,7 +773,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
                   f_in.open(tmp_file.c_str());
                   if (!f_out.is_open()) {
                      std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
-                     MPI_Abort(MPI_COMM_WORLD, 208);
+                     MPI_Abort(MPI_COMM_WORLD, 215);
                   }
 
                   f_in_filter.reset();
@@ -798,7 +798,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
             err = MPI_File_open(comm_node, c_inst_args.corrected_read_file_name.c_str(), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &f_out);
             if (err != MPI_SUCCESS) {
                std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 210);
+               MPI_Abort(MPI_COMM_WORLD, 216);
             }
 
             // calculate the output offset
@@ -903,13 +903,13 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
             f_in.open(file_name.c_str());
             if (!f_in.is_open()) {
                std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name1 << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 208);
+               MPI_Abort(MPI_COMM_WORLD, 217);
             }
 
             f_out.open(c_inst_args.corrected_read_file_name1.c_str(), std::ofstream::binary);
             if (!f_out.is_open()) {
                std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name1 << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 208);
+               MPI_Abort(MPI_COMM_WORLD, 218);
             }
 
             f_in_filter.reset();
@@ -929,13 +929,13 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
             f_in.open(file_name.c_str());
             if (!f_in.is_open()) {
                std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name2 << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 208);
+               MPI_Abort(MPI_COMM_WORLD, 219);
             }
 
             f_out.open(c_inst_args.corrected_read_file_name2.c_str(), std::ofstream::binary);
             if (!f_out.is_open()) {
                std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name2 << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 208);
+               MPI_Abort(MPI_COMM_WORLD, 220);
             }
 
             f_in_filter.reset();
@@ -986,13 +986,13 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
             f_in.open(file_name.c_str());
             if (!f_in.is_open()) {
                std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 208);
+               MPI_Abort(MPI_COMM_WORLD, 221);
             }
 
             f_out.open(c_inst_args.corrected_read_file_name.c_str(), std::ofstream::binary);
             if (!f_out.is_open()) {
                std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 208);
+               MPI_Abort(MPI_COMM_WORLD, 222);
             }
 
             f_in_filter.reset();
@@ -1073,7 +1073,7 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_unzipped(const C_arg
    f_bf_dump_data.open(bf_data_file_name.c_str(), std::ios::binary);
    if (f_bf_dump_data.is_open() == false) {
       std::cout << std::endl << "ERROR: Cannot open " << bf_data_file_name << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 211);
+      MPI_Abort(MPI_COMM_WORLD, 223);
    }
 
    // load bit vector data
@@ -1159,7 +1159,7 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_unzipped(const C_arg
    FILE* f_corrected_read(fopen(corrected_read_file_name.c_str(), "w"));
    if (f_corrected_read == NULL) {
       std::cout << std::endl << "ERROR: Cannot open " << corrected_read_file_name << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 212);
+      MPI_Abort(MPI_COMM_WORLD, 224);
    }
 
    // initialize variables
@@ -1176,7 +1176,7 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_unzipped(const C_arg
    // check whether the input file is empty
    if (remaining_bytes <= 0) {
       std::cout << std::endl << "ERROR: Remaining bytes are " << remaining_bytes << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 213);
+      MPI_Abort(MPI_COMM_WORLD, 225);
    }
 
    // read loop
@@ -1195,7 +1195,7 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_unzipped(const C_arg
 
       if (!f_read.is_open()) {
          std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 214);
+         MPI_Abort(MPI_COMM_WORLD, 226);
       }
 
       // initialize variables
@@ -1420,7 +1420,7 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_unzipped(const C_arg
       }
       else if (remaining_bytes == prev_remaining_bytes) {
          std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name << " is wrong" << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 215);
+         MPI_Abort(MPI_COMM_WORLD, 227);
       }
       else {
          // align processed bytes to the multiple of unit_alignment_offset
@@ -1639,7 +1639,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_unzipped(const C_arg
    f_bf_dump_data.open(bf_data_file_name.c_str(), std::ios::binary);
    if (f_bf_dump_data.is_open() == false) {
       std::cout << std::endl << "ERROR: Cannot open " << bf_data_file_name << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 216);
+      MPI_Abort(MPI_COMM_WORLD, 228);
    }
 
    // load bit vector data
@@ -1726,7 +1726,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_unzipped(const C_arg
    FILE* f_corrected_read1(fopen(corrected_read_file_name1.c_str(), "w"));
    if (f_corrected_read1 == NULL) {
       std::cout << std::endl << "ERROR: Cannot open " << corrected_read_file_name1 << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 217);
+      MPI_Abort(MPI_COMM_WORLD, 229);
    }
 
    // initialize variables
@@ -1743,7 +1743,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_unzipped(const C_arg
    // check whether the input file is empty
    if (remaining_bytes <= 0) {
       std::cout << std::endl << "ERROR: Remaining bytes are " << remaining_bytes << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 218);
+      MPI_Abort(MPI_COMM_WORLD, 230);
    }
 
    // read loop
@@ -1762,7 +1762,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_unzipped(const C_arg
 
       if (!f_read.is_open()) {
          std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name1 << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 219);
+         MPI_Abort(MPI_COMM_WORLD, 231);
       }
 
       // initialize variables
@@ -1987,7 +1987,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_unzipped(const C_arg
       }
       else if (remaining_bytes == prev_remaining_bytes) {
          std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name1 << " is wrong" << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 220);
+         MPI_Abort(MPI_COMM_WORLD, 232);
       }
       else {
          // align processed bytes to the multiple of unit_alignment_offset
@@ -2166,7 +2166,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_unzipped(const C_arg
    FILE* f_corrected_read2(fopen(corrected_read_file_name2.c_str(), "w"));
    if (f_corrected_read2 == NULL) {
       std::cout << std::endl << "ERROR: Cannot open " << corrected_read_file_name2 << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 221);
+      MPI_Abort(MPI_COMM_WORLD, 233);
    }
 
    // initialize variables
@@ -2183,7 +2183,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_unzipped(const C_arg
    // check whether the input file is empty
    if (remaining_bytes <= 0) {
       std::cout << std::endl << "ERROR: Remaining bytes are " << remaining_bytes << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 222);
+      MPI_Abort(MPI_COMM_WORLD, 234);
    }
 
    // read loop
@@ -2202,7 +2202,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_unzipped(const C_arg
 
       if (!f_read.is_open()) {
          std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name2 << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 223);
+         MPI_Abort(MPI_COMM_WORLD, 235);
       }
 
       // initialize variables
@@ -2427,7 +2427,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_unzipped(const C_arg
       }
       else if (remaining_bytes == prev_remaining_bytes) {
          std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name2 << " is wrong" << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 224);
+         MPI_Abort(MPI_COMM_WORLD, 236);
       }
       else {
          // align processed bytes to the multiple of unit_alignment_offset
@@ -2641,7 +2641,7 @@ inline void C_correct_errors::correct_errors_in_a_read_fastq(const std::string& 
 
             if (new_solid_region.second < new_solid_region.first) {
                std::cout << std::endl << "ERROR: The second index is smaller than the first" << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 225);
+               MPI_Abort(MPI_COMM_WORLD, 237);
             }
             solid_regions.push_back(new_solid_region);
             solid_regions_org.push_back(new_solid_region);
@@ -5844,7 +5844,7 @@ inline bool C_correct_errors::query_text(const std::string& kmer, const unsigned
       }
       else {
          std::cout << std::endl << "ERROR: Illegal character " << kmer[it] << " (query_text)" << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 226);
+         MPI_Abort(MPI_COMM_WORLD, 238);
       }
    }
 
@@ -5873,7 +5873,7 @@ inline bool C_correct_errors::query_text(const std::string& kmer, const unsigned
                break;
             default :
                std::cout << std::endl << "ERROR: Illegal character " << kmer[it] << " (query_text)" << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 227);
+               MPI_Abort(MPI_COMM_WORLD, 239);
                break;
          }
       }
@@ -6046,7 +6046,7 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_gzipped(const C_arg&
    f_bf_dump_data.open(bf_data_file_name.c_str(), std::ios::binary);
    if (f_bf_dump_data.is_open() == false) {
       std::cout << std::endl << "ERROR: Cannot open " << bf_data_file_name << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 211);
+      MPI_Abort(MPI_COMM_WORLD, 240);
    }
 
    // load bit vector data
@@ -6137,7 +6137,7 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_gzipped(const C_arg&
    FILE* f_corrected_read(fopen(corrected_read_file_name.c_str(), "w"));
    if (f_corrected_read == NULL) {
       std::cout << std::endl << "ERROR: Cannot open " << corrected_read_file_name << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 212);
+      MPI_Abort(MPI_COMM_WORLD, 241);
    }
 
    // open an input read file
@@ -6146,7 +6146,7 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_gzipped(const C_arg&
 
    if (!f_read.is_open()) {
       std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 214);
+      MPI_Abort(MPI_COMM_WORLD, 242);
    }
 
    // set a stream filter for gzipped files
@@ -6563,7 +6563,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
    f_bf_dump_data.open(bf_data_file_name.c_str(), std::ios::binary);
    if (f_bf_dump_data.is_open() == false) {
       std::cout << std::endl << "ERROR: Cannot open " << bf_data_file_name << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 216);
+      MPI_Abort(MPI_COMM_WORLD, 243);
    }
 
    // load bit vector data
@@ -6638,7 +6638,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
    FILE* f_corrected_read1(fopen(corrected_read_file_name1.c_str(), "w"));
    if (f_corrected_read1 == NULL) {
       std::cout << std::endl << "ERROR: Cannot open " << corrected_read_file_name1 << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 217);
+      MPI_Abort(MPI_COMM_WORLD, 244);
    }
 
    // open an input read file
@@ -6647,7 +6647,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
 
    if (!f_read.is_open()) {
       std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name1 << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 214);
+      MPI_Abort(MPI_COMM_WORLD, 245);
    }
 
    // set a stream filter for gzipped files
@@ -7045,7 +7045,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
    FILE* f_corrected_read2(fopen(corrected_read_file_name2.c_str(), "w"));
    if (f_corrected_read2 == NULL) {
       std::cout << std::endl << "ERROR: Cannot open " << corrected_read_file_name2 << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 221);
+      MPI_Abort(MPI_COMM_WORLD, 246);
    }
 
    // open an input read file
@@ -7054,7 +7054,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
 
    if (!f_read.is_open()) {
       std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name2 << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 214);
+      MPI_Abort(MPI_COMM_WORLD, 247);
    }
 
    // set a stream filter for gzipped files
