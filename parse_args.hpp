@@ -36,6 +36,7 @@ public:
    std::string trim_file_name;
    std::string trim_file_name1;
    std::string trim_file_name2;
+   std::string pigz_binary;
 
    bloom_type random_seed;
 

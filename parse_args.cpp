@@ -270,6 +270,9 @@ void C_arg::read_args() {
 
    kmc_binary = bless_dir.string() + "/" + KMC_DIR + "/" + KMC_BINARY;
 
+   // pigz
+   pigz_binary = bless_dir.string() + "/" + PIGZ_DIR + "/" + PIGZ_BINARY;
+
    if (kmer_length == 0) {
       std::cout << std::endl << "ERROR: k-mer length not specified" << std::endl << std::endl;
       MPI_Abort(MPI_COMM_WORLD, 423);

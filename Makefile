@@ -10,6 +10,8 @@ OBJS=$(SRCS:.cpp=.o)
 $(PROG): $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
 	cd kmc; make CC=$(CC)
+	cd zlib; ./compile
+	cd pigz/pigz-2.3.3; make
 
 kmc/kmc_api/%.o: kmc/kmc_api/%.cpp
 	$(CC) $(CFLAGS) -c $(DEF) $? -o $@
@@ -19,4 +21,6 @@ kmc/kmc_api/%.o: kmc/kmc_api/%.cpp
 
 clean:
 	rm -rf $(PROG) $(OBJS)
-	cd kmc; make clean
+	cd kmc; make clean; cd ..
+	cd zlib; rm -rf install; cd zlib-1.2.8; make clean; cd ../..
+	cd pigz/pigz-2.3.3; make clean; cd ../..

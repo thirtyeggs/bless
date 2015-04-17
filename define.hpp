@@ -99,6 +99,8 @@
 #define MIN_MAX_MEM               4
 #define MAX_MAX_MEM               1024
 #define KMC_DEFAULT_MIN_COUNT     2
+#define PIGZ_DIR                  "pigz/pigz-2.3.3"
+#define PIGZ_BINARY               "pigz"
 #define DEFAULT_QS_CUTOFF         -10
 #define BIT_VEC_INC_RATIO         1.2
 #define OPENMP_CHUNK_SIZE         10
