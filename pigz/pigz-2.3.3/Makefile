@@ -1,4 +1,4 @@
-CC=cc
+CC=gcc
 CFLAGS=-O3 -Wall -Wextra
 LDFLAGS=-L ../../zlib/install/lib -lz
 ZOPFLI=zopfli/src/zopfli/
