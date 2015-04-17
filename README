@@ -56,8 +56,10 @@ KMC is updated to 2.2.1 (The max memory usage of KMC can be fixed to 4 GB for an
 A bug in writing a quality score hisgoram file is fixed.
 
 V0.25: XX/XX/2015
+Gzipped input reads can be used.
+Corrected reads can be compressed (-gzip).
 Non-ACGTN characters are converted to Ns.
-Minor bugs are fixed.
+Bugs are fixed.
 
 
 --------------------------------------------------
