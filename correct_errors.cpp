@@ -460,7 +460,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
    //----------------------------------------------------------------------
    if (size_node > 1) {
       //----------------------------------------------------------------------
-      // paired-end output file
+      // paired-end output file (multiple nodes)
       //----------------------------------------------------------------------
       if (c_inst_args.paired_read == true) {
          // gzip outputs
@@ -468,119 +468,123 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
             // only rank 0 does this
             // compressions cannot be parallelized
             if (rank_node == 0) {
-
-
-
-
-
-
-
-
-
-
                // variables
                std::string node_text;
                std::string tmp_file;
+               std::string cmd;
 
+               std::stringstream sstream_tmp;
                std::stringstream rank_node_stream;
 
-               std::ifstream f_in;
-
-               std::ofstream f_out;
-
-               boost::iostreams::filtering_streambuf<boost::iostreams::input> f_in_filter;
-
                //
-               // forward file
+               // forward
                //
-               // open output files
-               f_out.open(c_inst_args.corrected_read_file_name1.c_str(), std::ofstream::binary);
-               if (!f_out.is_open()) {
-                  std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name1 << std::endl << std::endl;
-                  MPI_Abort(MPI_COMM_WORLD, 208);
-               }
+               // command for running pigz
+               cmd = "cat ";
 
+               // temporary output files
                for (int it_rank = 0; it_rank < size_node; it_rank++) {
-                  // open a partial output file
                   rank_node_stream.str(std::string());
                   rank_node_stream.clear();
                   rank_node_stream << std::setw(5) << std::setfill('0') << it_rank;
                   node_text = rank_node_stream.str();
                   tmp_file  = c_inst_args.corrected_read_file_name1 + '.' + node_text;
 
-                  f_in.open(tmp_file.c_str());
-                  if (!f_out.is_open()) {
-                     std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
-                     MPI_Abort(MPI_COMM_WORLD, 209);
-                  }
-
-                  f_in_filter.reset();
-                  f_in_filter.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_speed)));
-                  f_in_filter.push(f_in);
-
-                  // write compressed temporarily filed to the output
-                  boost::iostreams::copy(f_in_filter, f_out);
-
-                  f_in.close();
-
-                  // remove the temporary file
-                  boost::filesystem::path path_tmp1(tmp_file);
-                  boost::filesystem::remove(path_tmp1);
+                  cmd += (" " + tmp_file);
                }
 
-               //
-               // reverse file
-               //
-               // open output files
-               f_out.open(c_inst_args.corrected_read_file_name2.c_str(), std::ofstream::binary);
-               if (!f_out.is_open()) {
-                  std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name2 << std::endl << std::endl;
-                  MPI_Abort(MPI_COMM_WORLD, 210);
+               // pigz binary
+               cmd += (" | " + c_inst_args.pigz_binary);
+
+               // pigz options
+               cmd += " --fast -cf";
+
+               // add the number of threads
+               // if specified
+               if (c_inst_args.smpthread > 0) {
+                  sstream_tmp.str("");
+                  sstream_tmp << c_inst_args.smpthread;
+                  cmd += (" -p " + sstream_tmp.str());
+               }
+               else {
+                  std::cout << std::endl << "ERROR: The number of threads is 0" << std::endl << std::endl;
+                  MPI_Abort(MPI_COMM_WORLD, 300);
                }
 
+               cmd += (" - > " + c_inst_args.corrected_read_file_name1 + ".gz");
+
+               // run pigz
+               if (system(cmd.c_str()) != 0) {
+                  std::cout << std::endl << "ERROR: pigz is abnormally terminated" << std::endl << std::endl;
+                  MPI_Abort(MPI_COMM_WORLD, 301);
+               }
+
+               // remove the temporary file
                for (int it_rank = 0; it_rank < size_node; it_rank++) {
-                  // open a partial output file
+                  rank_node_stream.str(std::string());
+                  rank_node_stream.clear();
+                  rank_node_stream << std::setw(5) << std::setfill('0') << it_rank;
+                  node_text = rank_node_stream.str();
+                  tmp_file  = c_inst_args.corrected_read_file_name1 + '.' + node_text;
+
+                  boost::filesystem::path path_tmp(tmp_file);
+                  boost::filesystem::remove(path_tmp);
+               }
+
+               //
+               // reverse
+               //
+               // command for running pigz
+               cmd = "cat ";
+
+               // temporary output files
+               for (int it_rank = 0; it_rank < size_node; it_rank++) {
                   rank_node_stream.str(std::string());
                   rank_node_stream.clear();
                   rank_node_stream << std::setw(5) << std::setfill('0') << it_rank;
                   node_text = rank_node_stream.str();
                   tmp_file  = c_inst_args.corrected_read_file_name2 + '.' + node_text;
 
-                  f_in.open(tmp_file.c_str());
-                  if (!f_out.is_open()) {
-                     std::cout << std::endl << "ERROR: Cannot open " << tmp_file << std::endl << std::endl;
-                     MPI_Abort(MPI_COMM_WORLD, 211);
-                  }
-
-                  f_in_filter.reset();
-                  f_in_filter.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_speed)));
-                  f_in_filter.push(f_in);
-
-                  // write compressed temporarily filed to the output
-                  boost::iostreams::copy(f_in_filter, f_out);
-
-                  f_in.close();
-
-                  // remove the temporary file
-                  boost::filesystem::path path_tmp2(tmp_file);
-                  boost::filesystem::remove(path_tmp2);
+                  cmd += (" " + tmp_file);
                }
 
-               f_out.close();
+               // pigz binary
+               cmd += (" | " + c_inst_args.pigz_binary);
 
+               // pigz options
+               cmd += " --fast -cf";
 
+               // add the number of threads
+               // if specified
+               if (c_inst_args.smpthread > 0) {
+                  sstream_tmp.str("");
+                  sstream_tmp << c_inst_args.smpthread;
+                  cmd += (" -p " + sstream_tmp.str());
+               }
+               else {
+                  std::cout << std::endl << "ERROR: The number of threads is 0" << std::endl << std::endl;
+                  MPI_Abort(MPI_COMM_WORLD, 300);
+               }
 
+               cmd += (" - > " + c_inst_args.corrected_read_file_name2 + ".gz");
 
+               // run pigz
+               if (system(cmd.c_str()) != 0) {
+                  std::cout << std::endl << "ERROR: pigz is abnormally terminated" << std::endl << std::endl;
+                  MPI_Abort(MPI_COMM_WORLD, 301);
+               }
 
+               // remove the temporary file
+               for (int it_rank = 0; it_rank < size_node; it_rank++) {
+                  rank_node_stream.str(std::string());
+                  rank_node_stream.clear();
+                  rank_node_stream << std::setw(5) << std::setfill('0') << it_rank;
+                  node_text = rank_node_stream.str();
+                  tmp_file  = c_inst_args.corrected_read_file_name2 + '.' + node_text;
 
-
-
-
-
-
-
-
-
+                  boost::filesystem::path path_tmp(tmp_file);
+                  boost::filesystem::remove(path_tmp);
+               }
             }
          }
          // do not gzip outputs
@@ -759,7 +763,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
          }
       }
       //----------------------------------------------------------------------
-      // single-end output file
+      // single-end output file (multiple nodes)
       //----------------------------------------------------------------------
       else {
          // gzip outputs
@@ -767,16 +771,6 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
             // only rank 0 does this
             // compressions cannot be parallelized
             if (rank_node == 0) {
-
-
-
-
-
-
-
-
-
-
                // variables
                std::string node_text;
                std::string tmp_file;
@@ -817,7 +811,7 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
                   MPI_Abort(MPI_COMM_WORLD, 300);
                }
 
-               cmd += (" - > " + c_inst_args.corrected_read_file_name);
+               cmd += (" - > " + c_inst_args.corrected_read_file_name + ".gz");
 
                // run pigz
                if (system(cmd.c_str()) != 0) {
@@ -827,21 +821,15 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
 
                // remove the temporary file
                for (int it_rank = 0; it_rank < size_node; it_rank++) {
+                  rank_node_stream.str(std::string());
+                  rank_node_stream.clear();
+                  rank_node_stream << std::setw(5) << std::setfill('0') << it_rank;
+                  node_text = rank_node_stream.str();
+                  tmp_file  = c_inst_args.corrected_read_file_name + '.' + node_text;
+
                   boost::filesystem::path path_tmp(tmp_file);
                   boost::filesystem::remove(path_tmp);
                }
-
-
-
-
-
-
-
-
-
-
-
-
             }
          }
          // do not gzip outputs
@@ -939,105 +927,87 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
    //----------------------------------------------------------------------
    else {
       //----------------------------------------------------------------------
-      // paired-end output file
+      // paired-end output file (one node)
       //----------------------------------------------------------------------
       if (c_inst_args.paired_read == true) {
          // gzip outputs
          if (c_inst_args.gzipped_output_read) {
+            // variables
+            std::string node_text;
+            std::string cmd;
 
+            std::stringstream sstream_tmp;
+            std::stringstream rank_node_stream;
 
-
-
-
-
-
-
-
-
-
-
-
-
-            std::string file_name;
-
-            std::ifstream f_in;
-
-            std::ofstream f_out;
-
-            boost::iostreams::filtering_streambuf<boost::iostreams::input> f_in_filter;
-
+            //
             // forward
-            file_name = c_inst_args.corrected_read_file_name1 + '.' + rank_node_text;
+            //
+            // rename temporary output files
+            boost::filesystem::path tmp1(c_inst_args.corrected_read_file_name1 + '.' + rank_node_text);
+            boost::filesystem::path org1(c_inst_args.corrected_read_file_name1);
+            boost::filesystem::rename(tmp1, org1);
 
-            f_in.open(file_name.c_str());
-            if (!f_in.is_open()) {
-               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name1 << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 217);
+            // command for running pigz
+            cmd = c_inst_args.pigz_binary;
+
+            // pigz options
+            cmd += " --fast -f";
+
+            // add the number of threads
+            // if specified
+            if (c_inst_args.smpthread > 0) {
+               sstream_tmp.str("");
+               sstream_tmp << c_inst_args.smpthread;
+               cmd += (" -p " + sstream_tmp.str());
+            }
+            else {
+               std::cout << std::endl << "ERROR: The number of threads is 0" << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 300);
             }
 
-            f_out.open(c_inst_args.corrected_read_file_name1.c_str(), std::ofstream::binary);
-            if (!f_out.is_open()) {
-               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name1 << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 218);
+            // temporary output files
+            cmd += (" " + c_inst_args.corrected_read_file_name1);
+
+            // run pigz
+            if (system(cmd.c_str()) != 0) {
+               std::cout << std::endl << "ERROR: pigz is abnormally terminated" << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 301);
             }
 
-            f_in_filter.reset();
-            f_in_filter.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_speed)));
-            f_in_filter.push(f_in);
-            boost::iostreams::copy(f_in_filter, f_out);
-
-            f_in.close();
-            f_out.close();
-
-            boost::filesystem::path path_source1(c_inst_args.corrected_read_file_name1 + '.' + rank_node_text);
-            boost::filesystem::remove(path_source1);
-
+            //
             // reverse
-            file_name = c_inst_args.corrected_read_file_name2 + '.' + rank_node_text;
+            //
+            // rename temporary output files
+            boost::filesystem::path tmp2(c_inst_args.corrected_read_file_name2 + '.' + rank_node_text);
+            boost::filesystem::path org2(c_inst_args.corrected_read_file_name2);
+            boost::filesystem::rename(tmp2, org2);
 
-            f_in.open(file_name.c_str());
-            if (!f_in.is_open()) {
-               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name2 << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 219);
+            // command for running pigz
+            cmd = c_inst_args.pigz_binary;
+
+            // pigz options
+            cmd += " --fast -f";
+
+            // add the number of threads
+            // if specified
+            if (c_inst_args.smpthread > 0) {
+               sstream_tmp.str("");
+               sstream_tmp << c_inst_args.smpthread;
+               cmd += (" -p " + sstream_tmp.str());
+            }
+            else {
+               std::cout << std::endl << "ERROR: The number of threads is 0" << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 300);
             }
 
-            f_out.open(c_inst_args.corrected_read_file_name2.c_str(), std::ofstream::binary);
-            if (!f_out.is_open()) {
-               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name2 << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 220);
+            // temporary output files
+            cmd += (" " + c_inst_args.corrected_read_file_name2);
+
+            // run pigz
+            if (system(cmd.c_str()) != 0) {
+               std::cout << std::endl << "ERROR: pigz is abnormally terminated" << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 301);
             }
-
-            f_in_filter.reset();
-            f_in_filter.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_speed)));
-            f_in_filter.push(f_in);
-            boost::iostreams::copy(f_in_filter, f_out);
-
-            f_in.close();
-            f_out.close();
-
-            boost::filesystem::path path_source2(c_inst_args.corrected_read_file_name2 + '.' + rank_node_text);
-            boost::filesystem::remove(path_source2);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
          }
          // do not gzip outputs
          else {
@@ -1058,43 +1028,49 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
          }
       }
       //----------------------------------------------------------------------
-      // single-end output file
+      // single-end output file (one node)
       //----------------------------------------------------------------------
       else {
          // gzip outputs
          if (c_inst_args.gzipped_output_read) {
-            std::string file_name;
+            // variables
+            std::string node_text;
+            std::string cmd;
 
-            std::ifstream f_in;
+            std::stringstream sstream_tmp;
+            std::stringstream rank_node_stream;
 
-            std::ofstream f_out;
+            // rename temporary output files
+            boost::filesystem::path tmp(c_inst_args.corrected_read_file_name + '.' + rank_node_text);
+            boost::filesystem::path org(c_inst_args.corrected_read_file_name);
+            boost::filesystem::rename(tmp, org);
 
-            boost::iostreams::filtering_streambuf<boost::iostreams::input> f_in_filter;
+            // command for running pigz
+            cmd = c_inst_args.pigz_binary;
 
-            file_name = c_inst_args.corrected_read_file_name + '.' + rank_node_text;
+            // pigz options
+            cmd += " --fast -f";
 
-            f_in.open(file_name.c_str());
-            if (!f_in.is_open()) {
-               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 221);
+            // add the number of threads
+            // if specified
+            if (c_inst_args.smpthread > 0) {
+               sstream_tmp.str("");
+               sstream_tmp << c_inst_args.smpthread;
+               cmd += (" -p " + sstream_tmp.str());
+            }
+            else {
+               std::cout << std::endl << "ERROR: The number of threads is 0" << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 300);
             }
 
-            f_out.open(c_inst_args.corrected_read_file_name.c_str(), std::ofstream::binary);
-            if (!f_out.is_open()) {
-               std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.corrected_read_file_name << std::endl << std::endl;
-               MPI_Abort(MPI_COMM_WORLD, 222);
+            // temporary output files
+            cmd += (" " + c_inst_args.corrected_read_file_name);
+
+            // run pigz
+            if (system(cmd.c_str()) != 0) {
+               std::cout << std::endl << "ERROR: pigz is abnormally terminated" << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 301);
             }
-
-            f_in_filter.reset();
-            f_in_filter.push(boost::iostreams::gzip_compressor(boost::iostreams::gzip_params(boost::iostreams::gzip::best_speed)));
-            f_in_filter.push(f_in);
-            boost::iostreams::copy(f_in_filter, f_out);
-
-            f_in.close();
-            f_out.close();
-
-            boost::filesystem::path path_source(c_inst_args.corrected_read_file_name + '.' + rank_node_text);
-            boost::filesystem::remove(path_source);
          }
          // do not gzip outputs
          else {

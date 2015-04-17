@@ -353,16 +353,9 @@ void C_arg::read_args() {
    qs_histo_file_name   = prefix + ".histo.qs";
 
    // set error_corrected read file names
-   if (gzipped_output_read == true) {
-      corrected_read_file_name  = prefix + ".corrected.fastq.gz";
-      corrected_read_file_name1 = prefix + ".1.corrected.fastq.gz";
-      corrected_read_file_name2 = prefix + ".2.corrected.fastq.gz";
-   }
-   else {
-      corrected_read_file_name  = prefix + ".corrected.fastq";
-      corrected_read_file_name1 = prefix + ".1.corrected.fastq";
-      corrected_read_file_name2 = prefix + ".2.corrected.fastq";
-   }
+   corrected_read_file_name  = prefix + ".corrected.fastq";
+   corrected_read_file_name1 = prefix + ".1.corrected.fastq";
+   corrected_read_file_name2 = prefix + ".2.corrected.fastq";
 
    // set bloom filter dump file names
    bf_data_file_name        = prefix    + ".bf.data";
