@@ -48,6 +48,10 @@
 // mpi
 #include <mpi.h>
 
+// klib
+#include <zlib.h>
+#include <kseq.h>
+
 
 
 // definitions
@@ -109,6 +113,8 @@
 #define BLOOM_RCV_BUFFER_SIZE     104857600 // 100 * 1024 * 1024 = 100 MB
 #define MAX_PHRED                 41
 #define KMER_BLOCK_SIZE           100000
+
+KSEQ_INIT(gzFile, gzread)
 
 static const char NEOCLEOTIDE[NUM_NEOCLEOTIDE] = {'A', 'C', 'G', 'T'};
 
