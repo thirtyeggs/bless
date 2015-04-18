@@ -66,10 +66,8 @@ Bugs are fixed.
 --------------------------------------------------
 System Requirements
 --------------------------------------------------
-Compiling the program requires the BOOST C++ library (http://www.boost.org),
-the Google sparsehash library (https://code.google.com/p/sparsehash),
-and MPI libraries. The latest version was tested with GCC 4.7.1, MPICH 3.1.3
-(or OpenMPI 1.8.2), and BOOST 1.57.0.
+Compiling BLESS requires MPI libraries. The latest version was tested with GCC 4.9.2, MPICH 3.1.3
+(or OpenMPI 1.8.2).
 If you see the following error message, you need to upgrade your MPI library:
 error: initializing argument 2 of 'int MPI_File_open(MPI_Comm, char*, int, MPI_Info, ompi_file_t)'**
 
