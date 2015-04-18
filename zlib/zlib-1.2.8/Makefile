@@ -45,7 +45,7 @@ TAR=tar
 SHELL=/bin/sh
 EXE=
 
-prefix =/home/yunheo1/code/cpp/bless/release/bless/zlib/install
+prefix =/home/yunheo1/code/cpp/bless/release/bless-test/zlib/install
 exec_prefix =${prefix}
 libdir =${exec_prefix}/lib
 sharedlibdir =${libdir}
