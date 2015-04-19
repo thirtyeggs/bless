@@ -114,8 +114,6 @@
 #define MAX_PHRED                 41
 #define KMER_BLOCK_SIZE           100000
 
-KSEQ_INIT(gzFile, gzread)
-
 static const char NEOCLEOTIDE[NUM_NEOCLEOTIDE] = {'A', 'C', 'G', 'T'};
 
 static const unsigned char BIT_MASK[BITS_PER_CHAR] = {

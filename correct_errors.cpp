@@ -2,6 +2,10 @@
 
 
 
+KSEQ_INIT(gzFile, gzread)
+
+
+
 //----------------------------------------------------------------------
 // determine_bloom_filter_parameters
 //----------------------------------------------------------------------
@@ -6207,52 +6211,40 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_gzipped(const C_arg&
    }
 
    // open an input read file
-   std::ifstream f_read;
-   f_read.open(c_inst_args.read_file_name.c_str(), std::ios_base::binary);
+   gzFile f_read;
 
-   if (!f_read.is_open()) {
+   kseq_t* each_read;
+
+   f_read = gzopen(c_inst_args.read_file_name.c_str(), "r");
+   if (f_read == Z_NULL) {
       std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name << std::endl << std::endl;
       MPI_Abort(MPI_COMM_WORLD, 242);
    }
 
-   // set a stream filter for gzipped files
-   boost::iostreams::filtering_istream f_read_filter;
-
-   f_read_filter.push(boost::iostreams::gzip_decompressor());
-   f_read_filter.push(f_read);
+   // initialize each_read
+   each_read = kseq_init(f_read);
 
    // skip unnecessary reads
    for (std::size_t it_read_order = 0; it_read_order < end_read_prev_rank; it_read_order++) {
-      std::getline(f_read_filter, buffer_not_needed);
-      std::getline(f_read_filter, buffer_not_needed);
-      std::getline(f_read_filter, buffer_not_needed);
-      std::getline(f_read_filter, buffer_not_needed);
+      kseq_read(each_read);
    }
 
    // process reads
    for (std::size_t it_read_order = 0; it_read_order < num_reads_vector[rank_node]; it_read_order++) {
+      // read a read
+      kseq_read(each_read);
+
       // calculate the index for read_vector
       current_read_index_write = read_vector_index * 3;
 
-      //
       // header
-      //
-      std::getline(f_read_filter, read_vector[current_read_index_write]);
+      read_vector[current_read_index_write].assign(each_read->name.s);
 
-      //
       // sequence
-      //
-      std::getline(f_read_filter, read_vector[current_read_index_write + 1]);
+      read_vector[current_read_index_write + 1].assign(each_read->seq.s);
 
-      //
-      // connector
-      //
-      std::getline(f_read_filter, buffer_not_needed);
-
-      //
       // quality score
-      //
-      std::getline(f_read_filter, read_vector[current_read_index_write + 2]);
+      read_vector[current_read_index_write + 2].assign(each_read->qual.s);
 
       read_vector_index++;
       num_reads_local++;
@@ -6419,7 +6411,8 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_gzipped(const C_arg&
       }
    }
 
-   f_read.close();
+   kseq_destroy(each_read);
+   gzclose(f_read);
 
    // correct errors in remaining reads
    if (read_vector_index > 0) {
@@ -6707,19 +6700,30 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
       MPI_Abort(MPI_COMM_WORLD, 244);
    }
 
-   // open an input read file
-   // open the file
-   f_read.open(c_inst_args.read_file_name1.c_str(), std::ios_base::binary);
 
-   if (!f_read.is_open()) {
+
+
+
+
+
+
+
+
+
+
+   // open an input read file
+   gzFile f_read_1;
+
+   kseq_t* each_read_1;
+
+   f_read_1 = gzopen(c_inst_args.read_file_name1.c_str(), "r");
+   if (f_read_1 == Z_NULL) {
       std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name1 << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 245);
+      MPI_Abort(MPI_COMM_WORLD, 242);
    }
 
-   // set a stream filter for gzipped files
-   f_read_filter.reset();
-   f_read_filter.push(boost::iostreams::gzip_decompressor());
-   f_read_filter.push(f_read);
+   // initialize each_read_1
+   each_read_1 = kseq_init(f_read_1);
 
    // initialize variables
    num_reads_local          = 0;
@@ -6747,36 +6751,44 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
 
    // skip unnecessary reads
    for (std::size_t it_read_order = 0; it_read_order < end_read_prev_rank; it_read_order++) {
-      std::getline(f_read_filter, buffer_not_needed);
-      std::getline(f_read_filter, buffer_not_needed);
-      std::getline(f_read_filter, buffer_not_needed);
-      std::getline(f_read_filter, buffer_not_needed);
+      kseq_read(each_read_1);
    }
 
    // process reads
    for (std::size_t it_read_order = 0; it_read_order < num_reads_vector1[rank_node]; it_read_order++) {
+      // read a read
+      kseq_read(each_read_1);
+
       // calculate the index for read_vector
       current_read_index_write = read_vector_index * 3;
 
-      //
       // header
-      //
-      std::getline(f_read_filter, read_vector[current_read_index_write]);
+      read_vector[current_read_index_write].assign(each_read_1->name.s);
 
-      //
       // sequence
-      //
-      std::getline(f_read_filter, read_vector[current_read_index_write + 1]);
+      read_vector[current_read_index_write + 1].assign(each_read_1->seq.s);
 
-      //
-      // connector
-      //
-      std::getline(f_read_filter, buffer_not_needed);
-
-      //
       // quality score
-      //
-      std::getline(f_read_filter, read_vector[current_read_index_write + 2]);
+      read_vector[current_read_index_write + 2].assign(each_read_1->qual.s);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       read_vector_index++;
       num_reads_local++;
@@ -6942,7 +6954,8 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
       }
    }
 
-   f_read.close();
+   kseq_destroy(each_read_1);
+   gzclose(f_read_1);
 
    // correct errors in remaining reads
    if (read_vector_index > 0) {
@@ -7115,18 +7128,18 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
    }
 
    // open an input read file
-   // open the file
-   f_read.open(c_inst_args.read_file_name2.c_str(), std::ios_base::binary);
+   gzFile f_read_2;
 
-   if (!f_read.is_open()) {
+   kseq_t* each_read_2;
+
+   f_read_2 = gzopen(c_inst_args.read_file_name2.c_str(), "r");
+   if (f_read_2 == Z_NULL) {
       std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name2 << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 247);
+      MPI_Abort(MPI_COMM_WORLD, 242);
    }
 
-   // set a stream filter for gzipped files
-   f_read_filter.reset();
-   f_read_filter.push(boost::iostreams::gzip_decompressor());
-   f_read_filter.push(f_read);
+   // initialize each_read_2
+   each_read_2 = kseq_init(f_read_2);
 
    // initialize variables
    num_reads_local          = 0;
@@ -7154,36 +7167,25 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
 
    // skip unnecessary reads
    for (std::size_t it_read_order = 0; it_read_order < end_read_prev_rank; it_read_order++) {
-      std::getline(f_read_filter, buffer_not_needed);
-      std::getline(f_read_filter, buffer_not_needed);
-      std::getline(f_read_filter, buffer_not_needed);
-      std::getline(f_read_filter, buffer_not_needed);
+      kseq_read(each_read_2);
    }
 
    // process reads
    for (std::size_t it_read_order = 0; it_read_order < num_reads_vector2[rank_node]; it_read_order++) {
+      // read a read
+      kseq_read(each_read_2);
+
       // calculate the index for read_vector
       current_read_index_write = read_vector_index * 3;
 
-      //
       // header
-      //
-      std::getline(f_read_filter, read_vector[current_read_index_write]);
+      read_vector[current_read_index_write].assign(each_read_2->name.s);
 
-      //
       // sequence
-      //
-      std::getline(f_read_filter, read_vector[current_read_index_write + 1]);
+      read_vector[current_read_index_write + 1].assign(each_read_2->seq.s);
 
-      //
-      // connector
-      //
-      std::getline(f_read_filter, buffer_not_needed);
-
-      //
       // quality score
-      //
-      std::getline(f_read_filter, read_vector[current_read_index_write + 2]);
+      read_vector[current_read_index_write + 2].assign(each_read_2->qual.s);
 
       read_vector_index++;
       num_reads_local++;
@@ -7349,7 +7351,8 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
       }
    }
 
-   f_read.close();
+   kseq_destroy(each_read_2);
+   gzclose(f_read_2);
 
    // correct errors in remaining reads
    if (read_vector_index > 0) {

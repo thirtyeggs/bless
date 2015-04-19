@@ -2,6 +2,10 @@
 
 
 
+KSEQ_INIT(gzFile, gzread)
+
+
+
 //----------------------------------------------------------------------
 // check_read_file
 //----------------------------------------------------------------------
@@ -810,44 +814,39 @@ void C_check_read::construct_quality_score_histogram_paired_unzipped(const C_arg
 // construct_quality_score_histogram_single_gzipped
 //----------------------------------------------------------------------
 void C_check_read::construct_quality_score_histogram_single_gzipped(const C_arg& c_inst_args) {
-   //
-   // count the number of lines
-   //
-   std::ifstream f_read;
+   gzFile f_read;
 
-   f_read.open(c_inst_args.read_file_name.c_str(), std::ios_base::binary);
+   kseq_t* each_read;
 
-   if (f_read.is_open() == false) {
+   // open an input read
+   f_read = gzopen(c_inst_args.read_file_name.c_str(), "r");
+
+   if (f_read == Z_NULL) {
       std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name << std::endl << std::endl;
       exit(EXIT_FAILURE);
    }
 
-   boost::iostreams::filtering_istream f_read_filter;
+   // initialize each_read
+   each_read = kseq_init(f_read);
 
-   f_read_filter.push(boost::iostreams::gzip_decompressor());
-   f_read_filter.push(f_read);
-   f_read_filter.unsetf(std::ios_base::skipws);
+   // build the quality score histogram
+   int length;
 
-   std::size_t num_lines;
-   num_lines = std::count(std::istream_iterator<char>(f_read_filter), std::istream_iterator<char>(), '\n');
+   num_reads = 0;
 
-   // check the number of lines
-   // there might be no "\n" in the last line
-   if ((num_lines % 4) == 1) {
-      num_lines++;
+   while ((length = kseq_read(each_read)) >= 0) {
+      for (unsigned int it_qual = 0; it_qual < each_read->qual.l; it_qual++) {
+         qs_histo_vec[(int)each_read->qual.s[it_qual]]++;
+      }
+
+      num_reads++;
    }
-   else if (num_lines == 0) {
-      std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name << " is 0" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 126);
-   }
-   else if ((num_lines % 4) != 0) {
-      std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name << " is not multiples of 4" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 127);
-   }
+
+   // close the file
+   kseq_destroy(each_read);
+   gzclose(f_read);
 
    // set num_reads_vector
-   num_reads = num_lines / 4;
-
    std::size_t num_reads_per_node(ceil(1.0 * num_reads / size_node));
    std::size_t num_reads_tmp(num_reads);
 
@@ -861,56 +860,6 @@ void C_check_read::construct_quality_score_histogram_single_gzipped(const C_arg&
          num_reads_tmp = 0;
       }
    }
-
-   f_read.close();
-
-   //
-   // build the quality score histogram
-   //
-   // open the file again
-   f_read.open(c_inst_args.read_file_name.c_str(), std::ios_base::binary);
-
-   if (!f_read.is_open()) {
-      std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 128);
-   }
-
-   // set a filter
-   f_read_filter.reset();
-   f_read_filter.push(boost::iostreams::gzip_decompressor());
-   f_read_filter.push(f_read);
-
-   // iterate the file
-   std::string buffer;
-
-   bool flag_run(true);
-
-   while (flag_run) {
-      // header
-      std::getline(f_read_filter, buffer);
-      // sequence
-      std::getline(f_read_filter, buffer);
-      // +
-      std::getline(f_read_filter, buffer);
-      // quality score
-      std::getline(f_read_filter, buffer);
-
-      if (!f_read_filter.eof()) {
-         // check read length
-         if (buffer.length() < c_inst_args.kmer_length) {
-            std::cout << std::endl << "ERROR: There are reads that are shorter than given k" << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 129);
-         }
-
-         for (unsigned int it = 0; it < buffer.length(); it++) {
-            qs_histo_vec[(int)buffer[it]]++;
-         }
-      }
-      else {
-         flag_run = 0;
-      }
-
-   }
 }
 
 
@@ -919,79 +868,75 @@ void C_check_read::construct_quality_score_histogram_single_gzipped(const C_arg&
 // construct_quality_score_histogram_paired_gzipped
 //----------------------------------------------------------------------
 void C_check_read::construct_quality_score_histogram_paired_gzipped(const C_arg& c_inst_args) {
-   //
-   // count the number of lines
-   //
-   std::ifstream f_read_1;
-   std::ifstream f_read_2;
+   int length;
 
-   f_read_1.open(c_inst_args.read_file_name1.c_str(), std::ios_base::binary);
-   f_read_2.open(c_inst_args.read_file_name2.c_str(), std::ios_base::binary);
-
+   //
    // forward
-   if (f_read_1.is_open() == false) {
+   //
+   kseq_t* each_read_1;
+
+   // open an input read
+   gzFile f_read_1;
+   f_read_1 = gzopen(c_inst_args.read_file_name1.c_str(), "r");
+
+   if (f_read_1 == Z_NULL) {
       std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name1 << std::endl << std::endl;
       exit(EXIT_FAILURE);
    }
 
+   // initialize each_read
+   each_read_1 = kseq_init(f_read_1);
+
+   // build the quality score histogram
+   std::size_t num_reads_1(0);
+
+   while ((length = kseq_read(each_read_1)) >= 0) {
+      for (unsigned int it_qual = 0; it_qual < each_read_1->qual.l; it_qual++) {
+         qs_histo_vec[(int)each_read_1->qual.s[it_qual]]++;
+      }
+
+      num_reads_1++;
+   }
+
+   // close the file
+   kseq_destroy(each_read_1);
+   gzclose(f_read_1);
+
+   //
    // reverse
-   if (f_read_2.is_open() == false) {
+   //
+   kseq_t* each_read_2;
+
+   // open an input read
+   gzFile f_read_2;
+   f_read_2 = gzopen(c_inst_args.read_file_name2.c_str(), "r");
+
+   if (f_read_2 == Z_NULL) {
       std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name2 << std::endl << std::endl;
       exit(EXIT_FAILURE);
    }
 
-   // set a filter
-   boost::iostreams::filtering_istream f_read_filter_1;
-   boost::iostreams::filtering_istream f_read_filter_2;
+   // initialize each_read
+   each_read_2 = kseq_init(f_read_2);
 
-   std::size_t num_lines_1;
-   std::size_t num_lines_2;
+   // build the quality score histogram
+   std::size_t num_reads_2(0);
 
-   // forward
-   f_read_filter_1.push(boost::iostreams::gzip_decompressor());
-   f_read_filter_1.push(f_read_1);
-   f_read_filter_1.unsetf(std::ios_base::skipws);
+   while ((length = kseq_read(each_read_2)) >= 0) {
+      for (unsigned int it_qual = 0; it_qual < each_read_2->qual.l; it_qual++) {
+         qs_histo_vec[(int)each_read_2->qual.s[it_qual]]++;
+      }
 
-   num_lines_1 = std::count(std::istream_iterator<char>(f_read_filter_1), std::istream_iterator<char>(), '\n');
-
-   // reverse
-   f_read_filter_2.push(boost::iostreams::gzip_decompressor());
-   f_read_filter_2.push(f_read_2);
-   f_read_filter_2.unsetf(std::ios_base::skipws);
-
-   num_lines_2 = std::count(std::istream_iterator<char>(f_read_filter_2), std::istream_iterator<char>(), '\n');
-
-   // check the number of lines
-   // there might be no "\n" in the last line
-   // forward
-   if ((num_lines_1 % 4) == 1) {
-      num_lines_1++;
-   }
-   else if (num_lines_1 == 0) {
-      std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name1 << " is 0" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 130);
-   }
-   else if ((num_lines_1 % 4) != 0) {
-      std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name1 << " is not multiples of 4" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 131);
+      num_reads_2++;
    }
 
-   // reverse
-   if ((num_lines_2 % 4) == 1) {
-      num_lines_2++;
-   }
-   else if (num_lines_2 == 0) {
-      std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name2 << " is 0" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 132);
-   }
-   else if ((num_lines_2 % 4) != 0) {
-      std::cout << std::endl << "ERROR: The number of lines in " << c_inst_args.read_file_name2 << " is not multiples of 4" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 133);
-   }
+   // close the file
+   kseq_destroy(each_read_2);
+   gzclose(f_read_2);
 
+   //
    // set num_reads_vector_*
-   std::size_t num_reads_1(num_lines_1 / 4);
-   std::size_t num_reads_2(num_lines_2 / 4);
+   //
    std::size_t num_reads_per_node_1(ceil(1.0 * num_reads_1 / size_node));
    std::size_t num_reads_per_node_2(ceil(1.0 * num_reads_2 / size_node));
    std::size_t num_reads_tmp_1(num_reads_1);
@@ -1026,106 +971,5 @@ void C_check_read::construct_quality_score_histogram_paired_gzipped(const C_arg&
    else {
       std::cout << std::endl << "ERROR: The number of lines in the two input read files is not matched" << std::endl << std::endl;
       MPI_Abort(MPI_COMM_WORLD, 134);
-   }
-
-   f_read_1.close();
-   f_read_2.close();
-
-   //
-   // build the quality score histogram
-   //
-   // open the file again
-   bool flag_run;
-
-   std::string buffer;
-
-   //
-   // forward
-   //
-   f_read_1.open(c_inst_args.read_file_name1.c_str(), std::ios_base::binary);
-
-   if (!f_read_1.is_open()) {
-      std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name1 << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 135);
-   }
-
-   // set a filter
-   f_read_filter_1.reset();
-   f_read_filter_1.push(boost::iostreams::gzip_decompressor());
-   f_read_filter_1.push(f_read_1);
-
-   // iterate the file
-   flag_run = true;
-
-   while (flag_run) {
-      // header
-      std::getline(f_read_filter_1, buffer);
-      // sequence
-      std::getline(f_read_filter_1, buffer);
-      // +
-      std::getline(f_read_filter_1, buffer);
-      // quality score
-      std::getline(f_read_filter_1, buffer);
-
-      if (!f_read_filter_1.eof()) {
-         // check read length
-         if (buffer.length() < c_inst_args.kmer_length) {
-            std::cout << std::endl << "ERROR: There are reads that are shorter than given k" << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 136);
-         }
-
-         for (unsigned int it = 0; it < buffer.length(); it++) {
-            qs_histo_vec[(int)buffer[it]]++;
-         }
-      }
-      else {
-         flag_run = 0;
-      }
-
-   }
-
-   //
-   // reverse
-   //
-   f_read_2.open(c_inst_args.read_file_name2.c_str(), std::ios_base::binary);
-
-   if (!f_read_2.is_open()) {
-      std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name2 << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 137);
-   }
-
-   // set a filter
-   f_read_filter_2.reset();
-   f_read_filter_2.push(boost::iostreams::gzip_decompressor());
-   f_read_filter_2.push(f_read_2);
-
-   // iterate the file
-   flag_run = true;
-
-   while (flag_run) {
-      // header
-      std::getline(f_read_filter_2, buffer);
-      // sequence
-      std::getline(f_read_filter_2, buffer);
-      // +
-      std::getline(f_read_filter_2, buffer);
-      // quality score
-      std::getline(f_read_filter_2, buffer);
-
-      if (!f_read_filter_2.eof()) {
-         // check read length
-         if (buffer.length() < c_inst_args.kmer_length) {
-            std::cout << std::endl << "ERROR: There are reads that are shorter than given k" << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 138);
-         }
-
-         for (unsigned int it = 0; it < buffer.length(); it++) {
-            qs_histo_vec[(int)buffer[it]]++;
-         }
-      }
-      else {
-         flag_run = 0;
-      }
-
    }
 }
