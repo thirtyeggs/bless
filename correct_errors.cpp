@@ -6183,12 +6183,10 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_gzipped(const C_arg&
    current_read_index_write = 0;
 
    // calculate end_read_prev_rank
-   // the current node rank == 0
-   if (rank_node == 0) {
-      end_read_prev_rank = 0;
-   }
+   end_read_prev_rank = 0;
+
    // the current node rank > 0
-   else {
+   if (rank_node > 0) {
       // if no read is assigned to this node
       // finding a start point is not needed
       if (num_reads_vector[rank_node] == 0) {
@@ -6238,7 +6236,8 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_gzipped(const C_arg&
       current_read_index_write = read_vector_index * 3;
 
       // header
-      read_vector[current_read_index_write].assign(each_read->name.s);
+      read_vector[current_read_index_write] = "@";
+      read_vector[current_read_index_write] += each_read->name.s;
 
       // sequence
       read_vector[current_read_index_write + 1].assign(each_read->seq.s);
@@ -6700,17 +6699,6 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
       MPI_Abort(MPI_COMM_WORLD, 244);
    }
 
-
-
-
-
-
-
-
-
-
-
-
    // open an input read file
    gzFile f_read_1;
 
@@ -6731,12 +6719,10 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
    current_read_index_write = 0;
 
    // calculate end_read_prev_rank
-   // the current node rank == 0
-   if (rank_node == 0) {
-      end_read_prev_rank = 0;
-   }
+   end_read_prev_rank = 0;
+
    // the current node rank > 0
-   else {
+   if (rank_node > 0) {
       // if no read is assigned to this node
       // finding a start point is not needed
       if (num_reads_vector1[rank_node] == 0) {
@@ -6763,32 +6749,14 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
       current_read_index_write = read_vector_index * 3;
 
       // header
-      read_vector[current_read_index_write].assign(each_read_1->name.s);
+      read_vector[current_read_index_write] = "@";
+      read_vector[current_read_index_write] += each_read_1->name.s;
 
       // sequence
       read_vector[current_read_index_write + 1].assign(each_read_1->seq.s);
 
       // quality score
       read_vector[current_read_index_write + 2].assign(each_read_1->qual.s);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       read_vector_index++;
       num_reads_local++;
@@ -7147,12 +7115,10 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
    current_read_index_write = 0;
 
    // calculate end_read_prev_rank
-   // the current node rank == 0
-   if (rank_node == 0) {
-      end_read_prev_rank = 0;
-   }
+   end_read_prev_rank = 0;
+
    // the current node rank > 0
-   else {
+   if (rank_node > 0) {
       // if no read is assigned to this node
       // finding a start point is not needed
       if (num_reads_vector2[rank_node] == 0) {
@@ -7179,7 +7145,8 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
       current_read_index_write = read_vector_index * 3;
 
       // header
-      read_vector[current_read_index_write].assign(each_read_2->name.s);
+      read_vector[current_read_index_write] = "@";
+      read_vector[current_read_index_write] += each_read_2->name.s;
 
       // sequence
       read_vector[current_read_index_write + 1].assign(each_read_2->seq.s);
