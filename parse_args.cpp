@@ -152,6 +152,7 @@ void C_arg::read_args() {
       }
       else if (strcmp(args[it_arg], "-gzip") == 0) {
          gzipped_output_read = true;
+         gzip_out_text = "On";
       }
       else if (strcmp(args[it_arg], "-notrim") == 0) {
          notrim = true;
@@ -409,6 +410,7 @@ void C_arg::read_args() {
       std::cout << "     Read extension amount        : " << extend << std::endl;
       std::cout << "     Load given Bloom filter data : " << load_bf_text << std::endl;
       std::cout << "     No trim reads                : " << notrim_text << std::endl;
+      std::cout << "     Gzip corrected reads         : " << gzip_out_text << std::endl;
       std::cout << "     Parsing arguments            : done" << std::endl;
       std::cout << std::endl;
    }

@@ -27,6 +27,7 @@ public:
    std::string loaded_bf_size_file_name;
    std::string load_bf_text;
    std::string notrim_text;
+   std::string gzip_out_text;
    std::string paired_read_text;
    std::string prefix;
    std::string qs_histo_file_name;
@@ -70,6 +71,7 @@ public:
                  ) :
                      load_bf_text("Off"),
                      notrim_text("Off"),
+                     gzip_out_text("Off"),
                      paired_read_text("On"),
                      random_seed(DEFAULT_SEED),
                      target_false_positive_prob(DEFAULT_FPR),
