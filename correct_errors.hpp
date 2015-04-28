@@ -130,6 +130,7 @@ private:
    void base_intersection(std::vector< std::pair<unsigned int, char> >::iterator in1_begin, const std::vector< std::pair<unsigned int, char> >::iterator& in1_end, std::vector< std::pair<unsigned int, char> >::iterator in2_begin, const std::vector< std::pair<unsigned int, char> >::iterator& in2_end, std::vector< std::pair<unsigned int, char> >& out);
    void base_union(std::vector< std::pair<unsigned int, char> >::iterator in1_begin, const std::vector< std::pair<unsigned int, char> >::iterator& in1_end, std::vector< std::pair<unsigned int, char> >::iterator in2_begin, const std::vector< std::pair<unsigned int, char> >::iterator& in2_end, std::vector< std::pair<unsigned int, char> >& out);
    void check_first_kmer(const std::string& kmer, const C_candidate_path& candidate_path_in, const std::vector<unsigned int>& low_qs_indexes, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& index, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed);
+   void check_first_kmer_sorted(const std::string& kmer, const C_candidate_path& candidate_path_in, const std::vector<unsigned int>& low_qs_indexes_sorted, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& index, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed);
    void correct_errors_in_reads_single_fastq_unzipped(const C_arg& c_inst_args);
    void correct_errors_in_reads_single_fastq_gzipped(const C_arg& c_inst_args);
    void correct_errors_in_reads_paired_fastq_unzipped(const C_arg& c_inst_args);
@@ -151,6 +152,8 @@ private:
    bool query_text(const std::string& kmer, const unsigned char*& bit_vector, const std::vector<unsigned int>& hash_seed);
 
    std::string remove_new_line(std::string in_string);
+
+   std::vector<unsigned int> sort_indexes(const std::string& in_string, const std::size_t& str_length);
 };
 
 

@@ -73,7 +73,7 @@ void C_arg::read_args() {
          }
          else {
             std::cout << std::endl << "ERROR: The Bloom filter file name prefix is not specified after the -load option" << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 405);
+            MPI_Abort(MPI_COMM_WORLD, 404);
          }
       }
       else if (strcmp(args[it_arg], "-kmerlength") == 0) {
@@ -83,7 +83,7 @@ void C_arg::read_args() {
          }
          else {
             std::cout << std::endl << "ERROR: The k-mer length is not specified after the -kmerlength option" << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 406);
+            MPI_Abort(MPI_COMM_WORLD, 405);
          }
       }
       else if (strcmp(args[it_arg], "-fpr") == 0) {
@@ -93,7 +93,7 @@ void C_arg::read_args() {
          }
          else {
             std::cout << std::endl << "ERROR: The false positvie probability is not specified after the -fpr option" << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 407);
+            MPI_Abort(MPI_COMM_WORLD, 406);
          }
       }
       else if (strcmp(args[it_arg], "-seed") == 0) {
@@ -103,7 +103,7 @@ void C_arg::read_args() {
          }
          else {
             std::cout << std::endl << "ERROR: The seed is not specified after the -seed option" << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 408);
+            MPI_Abort(MPI_COMM_WORLD, 407);
          }
       }
       else if (strcmp(args[it_arg], "-count") == 0) {
@@ -114,7 +114,7 @@ void C_arg::read_args() {
          }
          else {
             std::cout << std::endl << "ERROR: The k-mer occurrence threshold is not specified after the -count option" << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 409);
+            MPI_Abort(MPI_COMM_WORLD, 408);
          }
       }
       else if (strcmp(args[it_arg], "-extend") == 0) {
@@ -124,7 +124,7 @@ void C_arg::read_args() {
          }
          else {
             std::cout << std::endl << "ERROR: The max extension is not specified after the -extend option" << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 410);
+            MPI_Abort(MPI_COMM_WORLD, 409);
          }
       }
       else if (strcmp(args[it_arg], "-max_mem") == 0) {
@@ -134,7 +134,7 @@ void C_arg::read_args() {
          }
          else {
             std::cout << std::endl << "ERROR: The max memory usage is not specified after the -max_mem option" << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 411);
+            MPI_Abort(MPI_COMM_WORLD, 410);
          }
       }
       else if (strcmp(args[it_arg], "-smpthread") == 0) {
@@ -144,7 +144,7 @@ void C_arg::read_args() {
          }
          else {
             std::cout << std::endl << "ERROR: The number of threads in a SMP node is not specified after the -smpthread option" << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 412);
+            MPI_Abort(MPI_COMM_WORLD, 411);
          }
       }
       else if (strcmp(args[it_arg], "-debug") == 0) {
@@ -160,7 +160,7 @@ void C_arg::read_args() {
       }
       else {
          std::cout << std::endl << "ERROR: Illegal option " << args[it_arg] << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 413);
+         MPI_Abort(MPI_COMM_WORLD, 412);
       }
    }
 
@@ -178,28 +178,28 @@ void C_arg::read_args() {
 
       if (read_file_name1.empty()) {
          std::cout << std::endl << "ERROR: The first read file name is not specified" << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 414);
+         MPI_Abort(MPI_COMM_WORLD, 413);
       }
       else {
          std::ifstream f_tmp;
          f_tmp.open(read_file_name1.c_str());
          if (f_tmp.is_open() == false) {
             std::cout << std::endl << "ERROR: Cannot open " << read_file_name1 << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 415);
+            MPI_Abort(MPI_COMM_WORLD, 414);
          }
          f_tmp.close();
       }
 
       if (read_file_name2.empty()) {
          std::cout << std::endl << "ERROR: The second read file name is not specified" << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 416);
+         MPI_Abort(MPI_COMM_WORLD, 415);
       }
       else {
          std::ifstream f_tmp;
          f_tmp.open(read_file_name2.c_str());
          if (f_tmp.is_open() == false) {
             std::cout << std::endl << "ERROR: Cannot open " << read_file_name2 << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 417);
+            MPI_Abort(MPI_COMM_WORLD, 416);
          }
          f_tmp.close();
       }
@@ -222,7 +222,7 @@ void C_arg::read_args() {
          // the second file is gzipped
          if (std::regex_search(read_file_name1, smatch1, rx_gz_ext)) {
             std::cout <<  std::endl << "ERROR: Only one out of two input read files is gzipped" << read_file_name2 << std::endl << std::endl;
-            MPI_Abort(MPI_COMM_WORLD, 417);
+            MPI_Abort(MPI_COMM_WORLD, 418);
          }
       }
    }
@@ -235,17 +235,17 @@ void C_arg::read_args() {
       f_tmp.open(read_file_name.c_str());
       if (f_tmp.is_open() == false) {
          std::cout << std::endl << "ERROR: Cannot open " << read_file_name << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 418);
+         MPI_Abort(MPI_COMM_WORLD, 419);
       }
       f_tmp.close();
 
       if (read_file_name1.empty() == false) {
          std::cout << std::endl << "ERROR: -read1 cannot be used with -read" << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 419);
+         MPI_Abort(MPI_COMM_WORLD, 420);
       }
       if (read_file_name2.empty() == false) {
          std::cout << std::endl << "ERROR: -read2 cannot be used with -read" << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 420);
+         MPI_Abort(MPI_COMM_WORLD, 421);
       }
 
       // check whether both the files are gzipped
@@ -257,7 +257,13 @@ void C_arg::read_args() {
    // prefix
    if (prefix.empty()) {
       std::cout << std::endl << "ERROR: The prefix is not specified" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 421);
+      MPI_Abort(MPI_COMM_WORLD, 422);
+   }
+
+   // k
+   if (kmer_length < MAX_LOW_QS_BASES ) {
+      std::cout << std::endl << "ERROR: k should be >= " << MAX_LOW_QS_BASES << std::endl << std::endl;
+      MPI_Abort(MPI_COMM_WORLD, 423);
    }
 
    boost::filesystem::path prefix_tmp(prefix);
@@ -276,56 +282,56 @@ void C_arg::read_args() {
 
    if (kmer_length == 0) {
       std::cout << std::endl << "ERROR: k-mer length not specified" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 423);
+      MPI_Abort(MPI_COMM_WORLD, 424);
    }
    else if (kmer_length < MIN_KMER_LENGTH) {
       std::cout << std::endl << "ERROR: k-mer length should be >= " << MIN_KMER_LENGTH << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 424);
+      MPI_Abort(MPI_COMM_WORLD, 425);
    }
    else if (kmer_length > MAX_KMER_LENGTH) {
       std::cout << std::endl << "ERROR: k-mer length should be < " << MAX_KMER_LENGTH << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 425);
+      MPI_Abort(MPI_COMM_WORLD, 426);
    }
 
    if (target_false_positive_prob == 0.0) {
       std::cout << std::endl << "ERROR: Target false positive probability not specified" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 426);
+      MPI_Abort(MPI_COMM_WORLD, 427);
    }
    else if (target_false_positive_prob < 0 || target_false_positive_prob > 1) {
       std::cout << std::endl << "ERROR: False positive rate should be between 0 and 1" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 427);
+      MPI_Abort(MPI_COMM_WORLD, 428);
    }
 
    if (set_kmer_occurrence_threshold == true) {
       if (kmer_occurrence_threshold < 2) {
          std::cout << std::endl << "ERROR: The k-mer occurrence threshold should be >= 2" << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 428);
+         MPI_Abort(MPI_COMM_WORLD, 429);
       }
       else if (kmer_occurrence_threshold > MAX_KMER_THRESHOLD) {
          std::cout << std::endl << "ERROR: The k-mer occurrence threshold cannot exceed " << MAX_KMER_THRESHOLD << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 429);
+         MPI_Abort(MPI_COMM_WORLD, 430);
       }
 
       if (load_bf == true) {
          std::cout << std::endl << "ERROR: The k-mer occurrence threshold cannot be used with the -count option" << std::endl << std::endl;
-         MPI_Abort(MPI_COMM_WORLD, 430);
+         MPI_Abort(MPI_COMM_WORLD, 431);
       }
    }
 
    // extend amount
    if (extend < 1) {
       std::cout << std::endl << "ERROR: The max extension should be >= 1" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 431);
+      MPI_Abort(MPI_COMM_WORLD, 432);
    }
 
    // max memory usage for kmc
    if (max_mem < MIN_MAX_MEM) {
       std::cout << std::endl << "ERROR: The max memeory usage should be >= " << MIN_MAX_MEM << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 432);
+      MPI_Abort(MPI_COMM_WORLD, 433);
    }
    else if (max_mem > MAX_MAX_MEM) {
       std::cout << std::endl << "ERROR: The max memeory usage should be <= " << MAX_MAX_MEM << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 433);
+      MPI_Abort(MPI_COMM_WORLD, 434);
    }
 
    // number of cores in a smp node

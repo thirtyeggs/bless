@@ -4931,8 +4931,26 @@ inline void C_correct_errors::correct_errors_first_kmer(const std::string& seque
 
          candidate_path_vector.push_back(candidate_path);
       }
+      // the first k-mer is not solid
       else {
+         // change the bases with the lowest MAX_LOW_QS_BASES quality scores
+         std::vector<unsigned int> low_qs_indexes_sorted(sort_indexes(quality_score, kmer_length));
+
+         C_candidate_path candidate_path_sorted;
+
+         check_first_kmer_sorted(
+                                 first_kmer,
+                                 candidate_path_sorted,
+                                 low_qs_indexes_sorted,
+                                 candidate_path_vector,
+                                 0,
+                                 bit_vector,
+                                 hash_seed
+                                );
+
          // change each base in the first k-mer and check whether it is solid
+         // it is still needed because there could be more than MAX_LOW_QS_BASES bases that have
+         // lower quality scores than real problematic ones
          for (unsigned int it_bases = 0; it_bases < kmer_length; it_bases++) {
             std::string kmer_tmp(first_kmer);
 
@@ -5016,8 +5034,24 @@ inline void C_correct_errors::correct_errors_first_kmer(const std::string& seque
       }
       // too many low-quality bases
       else {
+         // change the bases with the lowest MAX_LOW_QS_BASES quality scores
+         std::vector<unsigned int> low_qs_indexes_sorted(sort_indexes(quality_score, kmer_length));
+
+         C_candidate_path candidate_path_sorted;
+
+         check_first_kmer_sorted(
+                                 first_kmer,
+                                 candidate_path_sorted,
+                                 low_qs_indexes_sorted,
+                                 candidate_path_vector,
+                                 0,
+                                 bit_vector,
+                                 hash_seed
+                                );
+
          // change each base in the first k-mer and check whether it is solid
          C_candidate_path candidate_path;
+
          for (unsigned int it_bases = 0; it_bases < kmer_length; it_bases++) {
             std::string kmer_tmp(first_kmer);
 
@@ -5095,6 +5129,51 @@ inline void C_correct_errors::check_first_kmer(const std::string& kmer, const C_
                           bit_vector,
                           hash_seed
                          );
+      }
+   }
+}
+
+
+
+//----------------------------------------------------------------------
+// check_first_kmer_sorted
+//----------------------------------------------------------------------
+inline void C_correct_errors::check_first_kmer_sorted(const std::string& kmer, const C_candidate_path& candidate_path_in, const std::vector<unsigned int>& low_qs_indexes_sorted, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& index, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed) {
+   std::string new_kmer(kmer);
+
+   for (unsigned short int it_alter = A; it_alter <= T; it_alter++) {
+      // make a new k-mer
+      new_kmer[low_qs_indexes_sorted[index]] = NEOCLEOTIDE[it_alter];
+
+      C_candidate_path candidate_path_next(candidate_path_in);
+
+      if (kmer[low_qs_indexes_sorted[index]] != NEOCLEOTIDE[it_alter]) {
+         std::pair<unsigned int, char> pair_tmp;
+         pair_tmp.first = low_qs_indexes_sorted[index];
+         pair_tmp.second = NEOCLEOTIDE[it_alter];
+         candidate_path_next.modified_bases.push_back(pair_tmp);
+      }
+
+      // the max number of low quality base is reached
+      // add the path to the vector
+      // the original k-mer is also included
+      if (index == MAX_LOW_QS_BASES - 1) {
+         if (query_text(new_kmer, bit_vector, hash_seed) == true) {
+            candidate_path_vector.push_back(candidate_path_next);
+         }
+      }
+      // the rightmost low quality base is not reached
+      // do recursively
+      else {
+         check_first_kmer_sorted(
+                                 new_kmer,
+                                 candidate_path_next,
+                                 low_qs_indexes_sorted,
+                                 candidate_path_vector,
+                                 index + 1,
+                                 bit_vector,
+                                 hash_seed
+                                );
       }
    }
 }
@@ -7458,7 +7537,6 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
             }
          // it_read
          }
-
       // omp parallel
       }
 
@@ -7484,4 +7562,20 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
    num_corrected_errors = num_corrected_errors_tmp;
    num_corrected_reads  = num_corrected_reads_tmp;
    num_trimmed_bases    = num_trimmed_bases_tmp;
+}
+
+
+
+//----------------------------------------------------------------------
+// sort_indexes
+//----------------------------------------------------------------------
+inline std::vector<unsigned int> C_correct_errors::sort_indexes(const std::string& in_string, const std::size_t& str_length) {
+   std::vector<unsigned int> index_vector(str_length);
+   for (std::size_t it = 0; it != index_vector.size(); it++) {
+      index_vector[it] = it;
+   }
+
+   std::sort(index_vector.begin(), index_vector.end(), [&in_string](std::size_t i1, std::size_t i2) {return (unsigned short int)in_string[i1] < (unsigned short int)in_string[i2];});
+
+   return index_vector;
 }
