@@ -6972,6 +6972,9 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
                // too many Ns
                // write reads without modification
                else {
+                  // header
+                  read_vector[current_read_index]     += '\n';
+
                   // sequence
                   read_vector[current_read_index + 1] += '\n';
 
@@ -7133,6 +7136,9 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
             // too many Ns
             // write reads without modification
             else {
+               // header
+               read_vector[current_read_index]     += '\n';
+
                // sequence
                read_vector[current_read_index + 1] += '\n';
 
@@ -7381,6 +7387,9 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
                // too many Ns
                // write reads without modification
                else {
+                  // header
+                  read_vector[current_read_index]     += '\n';
+
                   // sequence
                   read_vector[current_read_index + 1] += '\n';
 
@@ -7542,6 +7551,9 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
             // too many Ns
             // write reads without modification
             else {
+               // header
+               read_vector[current_read_index]     += '\n';
+
                // sequence
                read_vector[current_read_index + 1] += '\n';
 
