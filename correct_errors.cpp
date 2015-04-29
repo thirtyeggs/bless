@@ -7166,7 +7166,20 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
    // reverse
    //
    // open a temporary output file
-   std::string corrected_read_file_name2(c_inst_args.corrected_read_file_name2 + '.' + rank_node_text);
+
+   // skipping reads that are processed by other nodes takes some time
+   // and the nodes with higher ranks requires more time.
+   // in order to compensate this, ranks are temporarily reversed.
+   // this is not needed for unzipped inputs.
+   int rank_node_tmp(size_node - rank_node - 1);
+
+   std::string rank_node_text_tmp;
+
+   std::stringstream rank_node_stream;
+   rank_node_stream << std::setw(5) << std::setfill('0') << rank_node_tmp;
+   rank_node_text_tmp = rank_node_stream.str();
+
+   std::string corrected_read_file_name2(c_inst_args.corrected_read_file_name2 + '.' + rank_node_text_tmp);
 
    FILE* f_corrected_read2(fopen(corrected_read_file_name2.c_str(), "w"));
    if (f_corrected_read2 == NULL) {
@@ -7197,14 +7210,14 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
    end_read_prev_rank = 0;
 
    // the current node rank > 0
-   if (rank_node > 0) {
+   if (rank_node_tmp > 0) {
       // if no read is assigned to this node
       // finding a start point is not needed
-      if (num_reads_vector2[rank_node] == 0) {
+      if (num_reads_vector2[rank_node_tmp] == 0) {
          end_read_prev_rank = 0;
       }
       else {
-         for (int it_rank = 0; it_rank < rank_node; it_rank++) {
+         for (int it_rank = 0; it_rank < rank_node_tmp; it_rank++) {
             end_read_prev_rank += num_reads_vector2[it_rank];
          }
       }
@@ -7216,7 +7229,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
    }
 
    // process reads
-   for (std::size_t it_read_order = 0; it_read_order < num_reads_vector2[rank_node]; it_read_order++) {
+   for (std::size_t it_read_order = 0; it_read_order < num_reads_vector2[rank_node_tmp]; it_read_order++) {
       // read a read
       kseq_read(each_read_2);
 
