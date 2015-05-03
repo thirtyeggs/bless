@@ -823,7 +823,7 @@ void C_check_read::construct_quality_score_histogram_single_gzipped(const C_arg&
 
    if (f_read == Z_NULL) {
       std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name << std::endl << std::endl;
-      exit(EXIT_FAILURE);
+      MPI_Abort(MPI_COMM_WORLD, 126);
    }
 
    // initialize each_read
@@ -868,71 +868,149 @@ void C_check_read::construct_quality_score_histogram_single_gzipped(const C_arg&
 // construct_quality_score_histogram_paired_gzipped
 //----------------------------------------------------------------------
 void C_check_read::construct_quality_score_histogram_paired_gzipped(const C_arg& c_inst_args) {
-   int length;
-
-   //
-   // forward
-   //
-   kseq_t* each_read_1;
-
-   // open an input read
-   gzFile f_read_1;
-   f_read_1 = gzopen(c_inst_args.read_file_name1.c_str(), "r");
-
-   if (f_read_1 == Z_NULL) {
-      std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name1 << std::endl << std::endl;
-      exit(EXIT_FAILURE);
-   }
-
-   // initialize each_read
-   each_read_1 = kseq_init(f_read_1);
-
-   // build the quality score histogram
    std::size_t num_reads_1(0);
-
-   while ((length = kseq_read(each_read_1)) >= 0) {
-      for (unsigned int it_qual = 0; it_qual < each_read_1->qual.l; it_qual++) {
-         qs_histo_vec[(int)each_read_1->qual.s[it_qual]]++;
-      }
-
-      num_reads_1++;
-   }
-
-   // close the file
-   kseq_destroy(each_read_1);
-   gzclose(f_read_1);
-
-   //
-   // reverse
-   //
-   kseq_t* each_read_2;
-
-   // open an input read
-   gzFile f_read_2;
-   f_read_2 = gzopen(c_inst_args.read_file_name2.c_str(), "r");
-
-   if (f_read_2 == Z_NULL) {
-      std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name2 << std::endl << std::endl;
-      exit(EXIT_FAILURE);
-   }
-
-   // initialize each_read
-   each_read_2 = kseq_init(f_read_2);
-
-   // build the quality score histogram
    std::size_t num_reads_2(0);
 
-   while ((length = kseq_read(each_read_2)) >= 0) {
-      for (unsigned int it_qual = 0; it_qual < each_read_2->qual.l; it_qual++) {
-         qs_histo_vec[(int)each_read_2->qual.s[it_qual]]++;
+   // only one thread
+   // two read files should be processed in serial order
+   if (c_inst_args.smpthread == 1) {
+      int length;
+
+      //
+      // forward
+      //
+      kseq_t* each_read_1;
+
+      // open an input read
+      gzFile f_read_1;
+      f_read_1 = gzopen(c_inst_args.read_file_name1.c_str(), "r");
+
+      if (f_read_1 == Z_NULL) {
+         std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name1 << std::endl << std::endl;
+         MPI_Abort(MPI_COMM_WORLD, 127);
       }
 
-      num_reads_2++;
-   }
+      // initialize each_read
+      each_read_1 = kseq_init(f_read_1);
 
-   // close the file
-   kseq_destroy(each_read_2);
-   gzclose(f_read_2);
+      // build the quality score histogram
+      while ((length = kseq_read(each_read_1)) >= 0) {
+         for (unsigned int it_qual = 0; it_qual < each_read_1->qual.l; it_qual++) {
+            qs_histo_vec[(int)each_read_1->qual.s[it_qual]]++;
+         }
+
+         num_reads_1++;
+      }
+
+      // close the file
+      kseq_destroy(each_read_1);
+      gzclose(f_read_1);
+
+      //
+      // reverse
+      //
+      kseq_t* each_read_2;
+
+      // open an input read
+      gzFile f_read_2;
+      f_read_2 = gzopen(c_inst_args.read_file_name2.c_str(), "r");
+
+      if (f_read_2 == Z_NULL) {
+         std::cout << std::endl << "ERROR: Cannot open " << c_inst_args.read_file_name2 << std::endl << std::endl;
+         MPI_Abort(MPI_COMM_WORLD, 128);
+      }
+
+      // initialize each_read
+      each_read_2 = kseq_init(f_read_2);
+
+      // build the quality score histogram
+      while ((length = kseq_read(each_read_2)) >= 0) {
+         for (unsigned int it_qual = 0; it_qual < each_read_2->qual.l; it_qual++) {
+            qs_histo_vec[(int)each_read_2->qual.s[it_qual]]++;
+         }
+
+         num_reads_2++;
+      }
+
+      // close the file
+      kseq_destroy(each_read_2);
+      gzclose(f_read_2);
+   }
+   // multiple threads
+   // two read files can be processed in parallel
+   else {
+      std::vector<std::size_t> qs_histo_vec_tmp;
+      qs_histo_vec_tmp.resize(QS_HISTOGRAM_MAX + 1, 0);
+
+      #pragma omp parallel shared(qs_histo_vec_tmp, num_reads_1, num_reads_2)
+      {
+         #pragma omp for
+         for (short int it_threads = 0; it_threads <= 1; it_threads++) {
+            int thread_id(omp_get_thread_num());
+
+            std::string in_file;
+
+            // thread id: 0
+            if (thread_id == 0) {
+               in_file = c_inst_args.read_file_name1;
+            }
+            // thread id: 1
+            else if (thread_id == 1) {
+               in_file = c_inst_args.read_file_name2;
+            }
+            else {
+               std::cout << std::endl << "ERROR: Wrong thread ID " << omp_get_thread_num() << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 129);
+            }
+
+            int length;
+
+            kseq_t* each_read;
+
+            // open an input read
+            gzFile f_read;
+            f_read = gzopen(in_file.c_str(), "r");
+
+            if (f_read == Z_NULL) {
+               std::cout << std::endl << "ERROR: Cannot open " << in_file << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 130);
+            }
+
+            // initialize each_read
+            each_read = kseq_init(f_read);
+
+            // build the quality score histogram
+            std::size_t num_reads_tmp(0);
+
+            while ((length = kseq_read(each_read)) >= 0) {
+               for (unsigned int it_qual = 0; it_qual < each_read->qual.l; it_qual++) {
+                  qs_histo_vec_tmp[(int)each_read->qual.s[it_qual]]++;
+               }
+
+               num_reads_tmp++;
+            }
+
+            // close the file
+            kseq_destroy(each_read);
+            gzclose(f_read);
+
+            // thread id: 0
+            if (thread_id == 0) {
+               num_reads_1 = num_reads_tmp;
+            }
+            // thread id: 1
+            else if (thread_id == 1) {
+               num_reads_2 = num_reads_tmp;
+            }
+            else {
+               std::cout << std::endl << "ERROR: Wrong thread ID " << omp_get_thread_num() << std::endl << std::endl;
+               MPI_Abort(MPI_COMM_WORLD, 131);
+            }
+         }
+      }
+
+      qs_histo_vec = qs_histo_vec_tmp;
+   }
 
    //
    // set num_reads_vector_*
@@ -970,6 +1048,6 @@ void C_check_read::construct_quality_score_histogram_paired_gzipped(const C_arg&
    }
    else {
       std::cout << std::endl << "ERROR: The number of lines in the two input read files is not matched" << std::endl << std::endl;
-      MPI_Abort(MPI_COMM_WORLD, 134);
+      MPI_Abort(MPI_COMM_WORLD, 132);
    }
 }
