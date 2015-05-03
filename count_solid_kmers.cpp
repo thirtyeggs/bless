@@ -73,7 +73,7 @@ void C_count_solid_kmers::run_kmc(const C_arg& c_inst_args) {
    // add max memory usage
    sstream_tmp.str("");
    sstream_tmp << c_inst_args.max_mem;
-   cmd += (" -m" + sstream_tmp.str() + " -sm -fq -v ");
+   cmd += (" -m" + sstream_tmp.str() + " -sm -fq -v");
 
    // add the number of nodes
    sstream_tmp.str("");
@@ -144,20 +144,10 @@ void C_count_solid_kmers::run_kmc(const C_arg& c_inst_args) {
    boost::filesystem::create_directory(kmc_tmp_absolute);
 
    // run kmc
-//   std::cout << std::endl << std::endl;
-//   std::cout << "     Running KMC" << std::endl;
-//   std::cout << std::endl;
-//   std::cout << "----------------------------------------------------------------------" << std::endl;
-
    if (system(cmd.c_str()) != 0) {
       std::cout << std::endl << "ERROR: KMC is abnormally terminated. See " << c_inst_args.prefix << "*.log" << std::endl << std::endl;
       MPI_Abort(MPI_COMM_WORLD, 301);
    }
-
-//   std::cout << "----------------------------------------------------------------------" << std::endl;
-//   std::cout << std::endl;
-//   std::cout << "     Running KMC is finished" << std::endl;
-//   std::cout << std::endl << std::endl;
 
    // remove the kmc temporary directory
    boost::filesystem::remove_all(kmc_tmp_absolute);
