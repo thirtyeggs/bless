@@ -514,7 +514,8 @@ template <typename KMER_T, unsigned SIZE, bool QUAKE_MODE> bool CKMC<KMER_T, SIZ
 	Queues.bd = new CBinDesc;
 	Queues.bq = new CBinQueue(1);
 
-	Queues.stats_part_queue = new CStatsPartQueue(Params.n_readers, STATS_FASTQ_SIZE);
+   // BLESS
+	Queues.stats_part_queue = new CStatsPartQueue(1, STATS_FASTQ_SIZE);
 
 	// Create memory manager
 	Queues.pmm_bins = new CMemoryPool(Params.mem_tot_pmm_bins, Params.mem_part_pmm_bins);
@@ -537,9 +538,11 @@ template <typename KMER_T, unsigned SIZE, bool QUAKE_MODE> bool CKMC<KMER_T, SIZ
 		gr0_2.push_back(thread(std::ref(*w_stats_splitters[i])));
 	}
 
-	w_stats_fastqs.resize(Params.n_readers);
+   // BLESS
+	w_stats_fastqs.resize(1);
 	
-	for (int i = 0; i < Params.n_readers; ++i)
+   // BLESS
+	for (int i = 0; i < 1; ++i)
 	{
 		w_stats_fastqs[i] = new CWStatsFastqReader(Params, Queues);
 		gr0_1.push_back(thread(std::ref(*w_stats_fastqs[i])));
@@ -555,7 +558,8 @@ template <typename KMER_T, unsigned SIZE, bool QUAKE_MODE> bool CKMC<KMER_T, SIZ
 	fill_n(stats, (1 << Params.signature_len * 2) + 1, 0);
 
 
-	for (int i = 0; i < Params.n_readers; ++i)
+   // BLESS
+	for (int i = 0; i < 1; ++i)
 		delete w_stats_fastqs[i];
 
 	for (int i = 0; i < Params.n_splitters; ++i)
