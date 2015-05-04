@@ -534,6 +534,17 @@ void C_correct_errors::correct_errors_in_reads(const C_arg& c_inst_args, C_time&
                   boost::filesystem::path path_tmp(tmp_file);
                   boost::filesystem::remove(path_tmp);
                }
+            }
+            // only rank 0 does this
+            // compressions cannot be parallelized
+            else if (rank_node == 1) {
+               // variables
+               std::string node_text;
+               std::string tmp_file;
+               std::string cmd;
+
+               std::stringstream sstream_tmp;
+               std::stringstream rank_node_stream;
 
                //
                // reverse
