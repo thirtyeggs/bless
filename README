@@ -57,10 +57,10 @@ A bug in writing a quality score hisgoram file is fixed.
 
 V0.25: XX/XX/2015
 Gzipped input reads can be used.
+Non deterministic behaviors of BLESS is corrected.
 Corrected reads can be compressed (-gzip).
 All the dependent libraries are included.
 Non-ACGTN characters are converted to Ns.
-Bugs are fixed.
 
 
 --------------------------------------------------
