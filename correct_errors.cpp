@@ -3222,7 +3222,7 @@ inline void C_correct_errors::correct_errors_in_a_read_fastq(const std::string& 
       //--------------------------------------------------
       if (candidate_path_vector_tmp.size() > 0) {
          // each path
-         run_exploration = true;
+         bool run_exploration(true);
 
          for (std::size_t it_candidates = 0; it_candidates < candidate_path_vector_tmp.size(); it_candidates++) {
             if (run_exploration == true) {
@@ -3233,7 +3233,8 @@ inline void C_correct_errors::correct_errors_in_a_read_fastq(const std::string& 
                                           candidate_path_vector_tmp_tmp,
                                           read_length,
                                           bit_vector,
-                                          hash_seed
+                                          hash_seed,
+                                          run_exploration
                                          );
             }
          }
@@ -3554,7 +3555,7 @@ inline void C_correct_errors::correct_errors_between_solid_regions(const std::st
    std::string kmer_initial(sequence.substr(index_start, kmer_length));
 
    // each alternative neocletide
-   run_exploration = true;
+   bool run_exploration(true);
 
    for (unsigned short int it_alter = A; it_alter <= T; it_alter++) {
       // make a change
@@ -3591,7 +3592,8 @@ inline void C_correct_errors::correct_errors_between_solid_regions(const std::st
                           org_boundary_right,
                           quality_score,
                           bit_vector,
-                          hash_seed
+                          hash_seed,
+                          run_exploration
                          );
          }
       }
@@ -4043,7 +4045,7 @@ inline void C_correct_errors::correct_errors_5_prime_end(const std::string& org_
    std::string kmer_initial(sequence.substr(index_start, kmer_length));
 
    // each alternative neocletide
-   run_exploration = true;
+   bool run_exploration(true);
 
    for (unsigned short int it_alter = A; it_alter <= T; it_alter++) {
       // make a change
@@ -4078,7 +4080,8 @@ inline void C_correct_errors::correct_errors_5_prime_end(const std::string& org_
                                       org_boundary,
                                       quality_score,
                                       bit_vector,
-                                      hash_seed
+                                      hash_seed,
+                                      run_exploration
                                      );
          }
       }
@@ -4487,7 +4490,7 @@ inline void C_correct_errors::correct_errors_3_prime_end(const std::string& org_
    std::string kmer_initial(sequence.substr(index_start, kmer_length));
 
    // each alternative neocletide
-   run_exploration = true;
+   bool run_exploration(true);
 
    for (unsigned short int it_alter = A; it_alter <= T; it_alter++) {
       // make a change
@@ -4522,7 +4525,8 @@ inline void C_correct_errors::correct_errors_3_prime_end(const std::string& org_
                                       org_boundary,
                                       quality_score,
                                       bit_vector,
-                                      hash_seed
+                                      hash_seed,
+                                      run_exploration
                                      );
          }
       }
@@ -5266,7 +5270,7 @@ inline void C_correct_errors::solid_first_kmer(const C_candidate_path& candidate
 //----------------------------------------------------------------------
 // extend_first_kmer_to_right
 //----------------------------------------------------------------------
-inline void C_correct_errors::extend_first_kmer_to_right(const std::string& sequence, const std::string& quality_score, C_candidate_path& candidate_path_in, std::vector<C_candidate_path>& candidate_path_vector_all, const std::size_t& read_length, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed) {
+inline void C_correct_errors::extend_first_kmer_to_right(const std::string& sequence, const std::string& quality_score, C_candidate_path& candidate_path_in, std::vector<C_candidate_path>& candidate_path_vector_all, const std::size_t& read_length, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed, bool& run_exploration) {
    // generate the first k-mer
    std::string first_kmer(sequence.substr(0, kmer_length + 1));
    for (unsigned int it_base = 0; it_base < candidate_path_in.modified_bases.size(); it_base++) {
@@ -5298,7 +5302,8 @@ inline void C_correct_errors::extend_first_kmer_to_right(const std::string& sequ
                                    read_length,
                                    quality_score,
                                    bit_vector,
-                                   hash_seed
+                                   hash_seed,
+                                   run_exploration
                                   );
       }
    }
@@ -5339,7 +5344,8 @@ inline void C_correct_errors::extend_first_kmer_to_right(const std::string& sequ
                                             read_length,
                                             quality_score,
                                             bit_vector,
-                                            hash_seed
+                                            hash_seed,
+                                            run_exploration
                                            );
                }
             }
@@ -5454,7 +5460,7 @@ inline void C_correct_errors::extend_first_kmer_to_right(const std::string& sequ
 //----------------------------------------------------------------------
 // extend_a_kmer
 //----------------------------------------------------------------------
-inline void C_correct_errors::extend_a_kmer(const std::string& kmer, const std::string& sequence, const std::size_t& index_kmer, const std::size_t& index_last_mod, C_candidate_path& current_path, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& org_boundary_left, const std::size_t& org_boundary_right, const std::string& quality_score, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed) {
+inline void C_correct_errors::extend_a_kmer(const std::string& kmer, const std::string& sequence, const std::size_t& index_kmer, const std::size_t& index_last_mod, C_candidate_path& current_path, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& org_boundary_left, const std::size_t& org_boundary_right, const std::string& quality_score, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed, bool& run_exploration) {
    if (run_exploration == true) {
       // generate a new k-mer
       std::string kmer_new(kmer.substr(1, kmer_length - 1));
@@ -5504,7 +5510,8 @@ inline void C_correct_errors::extend_a_kmer(const std::string& kmer, const std::
                                 org_boundary_right,
                                 quality_score,
                                 bit_vector,
-                                hash_seed
+                                hash_seed,
+                                run_exploration
                                );
                }
             }
@@ -5535,7 +5542,8 @@ inline void C_correct_errors::extend_a_kmer(const std::string& kmer, const std::
                              org_boundary_right,
                              quality_score,
                              bit_vector,
-                             hash_seed
+                             hash_seed,
+                             run_exploration
                             );
             }
          }
@@ -5581,7 +5589,8 @@ inline void C_correct_errors::extend_a_kmer(const std::string& kmer, const std::
                                       org_boundary_right,
                                       quality_score,
                                       bit_vector,
-                                      hash_seed
+                                      hash_seed,
+                                      run_exploration
                                      );
                      }
                   }
@@ -5597,7 +5606,7 @@ inline void C_correct_errors::extend_a_kmer(const std::string& kmer, const std::
 //----------------------------------------------------------------------
 // extend_a_kmer_5_prime_end
 //----------------------------------------------------------------------
-inline void C_correct_errors::extend_a_kmer_5_prime_end(const std::string& kmer, const std::string& sequence, const std::size_t& index_kmer, C_candidate_path& current_path, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& org_boundary, const std::string& quality_score, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed) {
+inline void C_correct_errors::extend_a_kmer_5_prime_end(const std::string& kmer, const std::string& sequence, const std::size_t& index_kmer, C_candidate_path& current_path, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& org_boundary, const std::string& quality_score, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed, bool& run_exploration) {
    if (run_exploration == true) {
       // generate a new k-mer
       std::string kmer_new(kmer.substr(0, kmer_length - 1));
@@ -5646,7 +5655,8 @@ inline void C_correct_errors::extend_a_kmer_5_prime_end(const std::string& kmer,
                                             org_boundary,
                                             quality_score,
                                             bit_vector,
-                                            hash_seed
+                                            hash_seed,
+                                            run_exploration
                                            );
                }
             }
@@ -5675,7 +5685,8 @@ inline void C_correct_errors::extend_a_kmer_5_prime_end(const std::string& kmer,
                                          org_boundary,
                                          quality_score,
                                          bit_vector,
-                                         hash_seed
+                                         hash_seed,
+                                         run_exploration
                                         );
             }
          }
@@ -5719,7 +5730,8 @@ inline void C_correct_errors::extend_a_kmer_5_prime_end(const std::string& kmer,
                                                   org_boundary,
                                                   quality_score,
                                                   bit_vector,
-                                                  hash_seed
+                                                  hash_seed,
+                                                  run_exploration
                                                  );
                      }
                   }
@@ -5735,7 +5747,7 @@ inline void C_correct_errors::extend_a_kmer_5_prime_end(const std::string& kmer,
 //----------------------------------------------------------------------
 // extend_a_kmer_3_prime_end
 //----------------------------------------------------------------------
-inline void C_correct_errors::extend_a_kmer_3_prime_end(const std::string& kmer, const std::string& sequence, const std::size_t& index_kmer, C_candidate_path& current_path, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& org_boundary, const std::string& quality_score, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed) {
+inline void C_correct_errors::extend_a_kmer_3_prime_end(const std::string& kmer, const std::string& sequence, const std::size_t& index_kmer, C_candidate_path& current_path, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& org_boundary, const std::string& quality_score, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed, bool& run_exploration) {
    if (run_exploration == true) {
       // generate a new k-mer
       std::string kmer_new(kmer.substr(1, kmer_length - 1));
@@ -5784,7 +5796,8 @@ inline void C_correct_errors::extend_a_kmer_3_prime_end(const std::string& kmer,
                                             org_boundary,
                                             quality_score,
                                             bit_vector,
-                                            hash_seed
+                                            hash_seed,
+                                            run_exploration
                                            );
                }
             }
@@ -5813,7 +5826,8 @@ inline void C_correct_errors::extend_a_kmer_3_prime_end(const std::string& kmer,
                                          org_boundary,
                                          quality_score,
                                          bit_vector,
-                                         hash_seed
+                                         hash_seed,
+                                         run_exploration
                                         );
             }
          }
@@ -5857,7 +5871,8 @@ inline void C_correct_errors::extend_a_kmer_3_prime_end(const std::string& kmer,
                                                   org_boundary,
                                                   quality_score,
                                                   bit_vector,
-                                                  hash_seed
+                                                  hash_seed,
+                                                  run_exploration
                                                  );
                      }
                   }
