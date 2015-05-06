@@ -99,10 +99,7 @@ public:
                        num_hash_func(0),
                        num_corrected_errors(0),
                        num_corrected_reads(0),
-                       num_wrongly_corrected_errors(0),
-                       num_wrongly_corrected_errors_check(0),
-                       read_block_size(0),
-                       run_exploration(true)
+                       read_block_size(0)
                       {};
 
    // functions
@@ -116,14 +113,10 @@ private:
 
    std::size_t num_corrected_errors;
    std::size_t num_corrected_reads;
-   std::size_t num_wrongly_corrected_errors;
-   std::size_t num_wrongly_corrected_errors_check;
    std::size_t read_block_size;
 
    std::string rank_node_text;
    std::string kmc_prefix;
-
-   bool run_exploration;
 
    // functions
    void base_difference(std::vector< std::pair<unsigned int, char> >::iterator in1_begin, const std::vector< std::pair<unsigned int, char> >::iterator& in1_end, std::vector< std::pair<unsigned int, char> >::iterator in2_begin, const std::vector< std::pair<unsigned int, char> >::iterator& in2_end, std::vector< std::pair<unsigned int, char> >& out);
@@ -140,10 +133,10 @@ private:
    void correct_errors_5_prime_end(const std::string& org_sequence, std::string& sequence, const std::string& quality_score, const std::size_t& index_start, std::string& sequence_modification, std::size_t& trim_5_end, std::size_t& trim_3_end, const std::size_t& org_boundary, const std::size_t& read_length, const std::size_t& max_trimmed_bases, const std::size_t& min_check_length, std::size_t& num_corrected_errors_local, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed);
    void correct_errors_3_prime_end(const std::string& org_sequence, std::string& sequence, const std::string& quality_score, const std::size_t& index_start, std::string& sequence_modification, std::size_t& trim_5_end, std::size_t& trim_3_end, const std::size_t& org_boundary, const std::size_t& read_length, const std::size_t& max_trimmed_bases, const std::size_t& min_check_length, std::size_t& num_corrected_errors_local, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed);
    void correct_errors_first_kmer(const std::string& sequence, const std::string& quality_score, std::string& sequence_modification, std::vector<C_candidate_path>& candidate_path_vector, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed);
-   void extend_a_kmer(const std::string& kmer, const std::string& sequence, const std::size_t& index_kmer, const std::size_t& index_last_mod, C_candidate_path& current_path, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& org_boundary_left, const std::size_t& org_boundary_right, const std::string& quality_score, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed);
-   void extend_a_kmer_5_prime_end(const std::string& kmer, const std::string& sequence, const std::size_t& index_kmer, C_candidate_path& current_path, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& org_boundary, const std::string& quality_score, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed);
-   void extend_a_kmer_3_prime_end(const std::string& kmer, const std::string& sequence, const std::size_t& index_kmer, C_candidate_path& current_path, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& org_boundary, const std::string& quality_score, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed);
-   void extend_first_kmer_to_right(const std::string& sequence, const std::string& quality_score, C_candidate_path& candidate_path_in, std::vector<C_candidate_path>& candidate_path_vector_all, const std::size_t& read_length, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed);
+   void extend_a_kmer(const std::string& kmer, const std::string& sequence, const std::size_t& index_kmer, const std::size_t& index_last_mod, C_candidate_path& current_path, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& org_boundary_left, const std::size_t& org_boundary_right, const std::string& quality_score, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed, bool& run_exploration);
+   void extend_a_kmer_5_prime_end(const std::string& kmer, const std::string& sequence, const std::size_t& index_kmer, C_candidate_path& current_path, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& org_boundary, const std::string& quality_score, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed, bool& run_exploration);
+   void extend_a_kmer_3_prime_end(const std::string& kmer, const std::string& sequence, const std::size_t& index_kmer, C_candidate_path& current_path, std::vector<C_candidate_path>& candidate_path_vector, const std::size_t& org_boundary, const std::string& quality_score, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed, bool& run_exploration);
+   void extend_first_kmer_to_right(const std::string& sequence, const std::string& quality_score, C_candidate_path& candidate_path_in, std::vector<C_candidate_path>& candidate_path_vector_all, const std::size_t& read_length, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed, bool& run_exploration);
    void extend_out_left(const std::string& kmer, const std::size_t& num_extend, const std::size_t& extend_amount, bool& extension_success, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed);
    void extend_out_right(const std::string& kmer, const std::size_t& num_extend, const std::size_t& extend_amount, bool& extension_success, const unsigned char* bit_vector, const std::vector<unsigned int>& hash_seed);
    void generate_hash_seed(const bloom_type random_seed, std::vector<unsigned int>& hash_seed);
