@@ -57,7 +57,7 @@
 // definitions
 #define HEX_UC(x)                 std::setw(2) << std::setfill('0') << std::hex << (int)(x)
 #define VERSION                   "0.25 CANDIDATE"
-#define DATE                      "May. 03, 2015"
+#define DATE                      "May. 05, 2015"
 #define BITS_PER_CHAR             8
 #define MAX_KMER_THRESHOLD        65535
 #define NUM_NEOCLEOTIDE           4
@@ -85,10 +85,9 @@
 #define SOLID_REGION_ADJUST_RANGE 4
 #define SUBST_CHAR                'A'
 #define MAX_ERROR_RATE            0.25
-#define MAX_TRIMMING_RATE         0.5
+#define MAX_TRIMMING_RATE         0.6
 #define MIN_BASES_AFTER_TRIMMING  30
 #define DEFAULT_SEED              0
-#define MAX_MODIFICATION_RATIO    0.5
 #define CHECK_RANGE_RATIO         0.07
 #define NUM_ALLOWABLE_FAILS       2
 #define MAX_AVG_QUALITY_SCORE     29
