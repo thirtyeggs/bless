@@ -3047,6 +3047,7 @@ inline void C_correct_errors::correct_errors_in_a_read_fastq(const std::string& 
    //--------------------------------------------------
    std::string sequence_modified(sequence);
 
+   // solid regions exist and none of them is too short
    if ((solid_regions.size() > 0) && (short_non_solid_region == false)) {
       //--------------------------------------------------
       // STEP 1-1: Correct errors between solid regions
@@ -3140,6 +3141,21 @@ inline void C_correct_errors::correct_errors_in_a_read_fastq(const std::string& 
                                           bit_vector,
                                           hash_seed
                                          );
+            }
+         }
+      }
+
+      //
+      // check whether any modification was made
+      //
+      if ((num_corrected_errors_local == 0) && (trim_5_end == 0) && (trim_3_end == 0)) {
+         trim_5_end = solid_regions[0].first;
+
+         // trim as many bases as possible
+         for (std::size_t it_solid_short = 0; it_solid_short < solid_regions.size(); it_solid_short++) {
+            if ((trim_5_end + (read_length - kmer_length - solid_regions[it_solid_short].second)) <= max_trimmed_bases) {
+               trim_3_end = read_length - kmer_length - solid_regions[it_solid_short].second;
+               break;
             }
          }
       }
@@ -3523,6 +3539,26 @@ inline void C_correct_errors::correct_errors_in_a_read_fastq(const std::string& 
                   num_corrected_errors_local++;
                }
             }
+         }
+      }
+      // no path
+      else {
+         // there are solid regions and they were ignored because the length among them is too short
+         // okay, trust them
+         if (solid_regions.size() > 0) {
+            trim_5_end = solid_regions[0].first;
+
+            // trim as many bases as possible
+            for (std::size_t it_solid_short = 0; it_solid_short < solid_regions.size(); it_solid_short++) {
+               if ((trim_5_end + (read_length - kmer_length - solid_regions[it_solid_short].second)) <= max_trimmed_bases) {
+                  trim_3_end = read_length - kmer_length - solid_regions[it_solid_short].second;
+                  break;
+               }
+            }
+         }
+         // the first k-mer has at least one error
+         else if (kmer_length <= max_trimmed_bases) {
+            trim_5_end = kmer_length;
          }
       }
    }
