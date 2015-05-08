@@ -96,7 +96,7 @@
 #define QS_CUTOFF_RATIO           0.05
 #define QS_EXTREMELY_LOW_RATIO    0.01
 #define MAX_N_RATIO               0.1
-#define MAX_CANDIDATE_PATHS       1024
+#define MAX_CANDIDATE_PATHS       74
 #define KMC_DIR                   "kmc/bin"
 #define KMC_BINARY                "kmc"
 #define MIN_MAX_MEM               4
