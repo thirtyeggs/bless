@@ -55,13 +55,12 @@ V0.24: 01/29/2015
 KMC is updated to 2.2.1 (The max memory usage of KMC can be fixed to 4 GB for any genome).
 A bug in writing a quality score hisgoram file is fixed.
 
-V0.25: XX/XX/2015
-Accuracy is improved.
-Gzipped input reads can be used.
-Non deterministic behaviors of BLESS is corrected.
-Corrected reads can be compressed (-gzip).
-All the dependent libraries are included.
-Non-ACGTN characters are converted to Ns.
+V1.00: 05/09/2015
+Error correction algorithm is enhanced.
+Compressed input/output files are supported.
+Dependent libraries are included (Boost headers are still needed).
+Non-ACGTN characters can be handled.
+Non deterministic behaviors are corrected.
 
 
 --------------------------------------------------
