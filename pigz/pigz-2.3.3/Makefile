@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-O3 -Wall -Wextra
+CFLAGS=-O3 -Wall -Wextra -I ../../zlib/install/include
 LDFLAGS=-L ../../zlib/install/lib -lz
 ZOPFLI=zopfli/src/zopfli/
 # use gcc and gmake on Solaris
