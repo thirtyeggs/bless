@@ -62,6 +62,9 @@ Dependent libraries are included (Boost headers are still needed).
 Non-ACGTN characters can be handled.
 Non deterministic behaviors are corrected.
 
+V1.01: 05/10/2015
+Runtime is improved by 10%.
+
 
 --------------------------------------------------
 System Requirements
