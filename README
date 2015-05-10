@@ -64,13 +64,14 @@ Non deterministic behaviors are corrected.
 
 V1.01: 05/10/2015
 Runtime is improved by 10%.
+All the dependent libraries are included.
 
 
 --------------------------------------------------
 System Requirements
 --------------------------------------------------
-Compiling BLESS requires MPI libraries. The latest version was tested with GCC 4.9.2, MPICH 3.1.3
-(or OpenMPI 1.8.2).
+Compiling BLESS requires MPI libraries. The latest version of BLESS was tested
+with GCC 4.9.2, MPICH 3.1.3 (or OpenMPI 1.8.2).
 If you see the following error message, you need to upgrade your MPI library:
 error: initializing argument 2 of 'int MPI_File_open(MPI_Comm, char*, int, MPI_Info, ompi_file_t)'**
 
@@ -78,11 +79,10 @@ error: initializing argument 2 of 'int MPI_File_open(MPI_Comm, char*, int, MPI_I
 --------------------------------------------------
 Dependency
 --------------------------------------------------
-Not included:
-Boost library (http://www.boost.org): static libraries are included; headers not included
 MPI: tested using MPICH 3.1.3 and OpenMPI 1.8.4
 
-Included:
+(Included dependent libraries)
+Boost library (http://www.boost.org)
 Google sparsehash (https://code.google.com/p/sparsehash)
 klib (https://github.com/attractivechaos/klib)
 KMC (http://sun.aei.polsl.pl/REFRESH/index.php?page=projects&project=kmc&subpage=about)
