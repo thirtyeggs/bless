@@ -62,6 +62,7 @@ public:
    int size_node;
 
    unsigned short int num_hash_func;
+   unsigned short int num_hash_func_real;
 
    std::vector<std::size_t> num_reads_vector;
    std::vector<std::size_t> num_reads_vector1;
@@ -97,6 +98,7 @@ public:
                        read_file_unit_size_byte2(0),
                        size_node(-1),
                        num_hash_func(0),
+                       num_hash_func_real(0),
                        num_corrected_errors(0),
                        num_corrected_reads(0),
                        read_block_size(0)
