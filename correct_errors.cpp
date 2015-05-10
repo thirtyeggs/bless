@@ -38,7 +38,15 @@ void C_correct_errors::determine_bloom_filter_parameters(const C_arg& c_inst_arg
    }
 
    // determine the size of the bloom filter
-   num_hash_func         = static_cast<unsigned int>(min_num_hash_func);
+   // the 128-bit murmur hash function can generate two 64-bit outputs at the same time
+   num_hash_func = static_cast<unsigned int>(min_num_hash_func);
+
+   // make num_hash_func an even number
+   if ((num_hash_func % 2) == 1) {
+      num_hash_func++;
+   }
+   num_hash_func_real = num_hash_func / 2;
+
    bit_vector_width      = static_cast<bloom_type>(min_bit_vector_width_element);
    bit_vector_width      += (((bit_vector_width % BITS_PER_CHAR) != 0) ? (BITS_PER_CHAR - (bit_vector_width % BITS_PER_CHAR)) : 0);
    bit_vector_width_byte = bit_vector_width / BITS_PER_CHAR;
@@ -113,10 +121,12 @@ void C_correct_errors::program_kmers(const C_arg& c_inst_args, C_time& c_inst_ti
 
    std::string kmer_string;
 
-   bloom_type original_index;
+   bloom_type original_index1;
+   bloom_type original_index2;
    bloom_type hash [2];
 
-   unsigned short int bit_index;
+   unsigned short int bit_index1;
+   unsigned short int bit_index2;
 
    kmer_vector.resize(KMER_BLOCK_SIZE);
 
@@ -133,7 +143,7 @@ void C_correct_errors::program_kmers(const C_arg& c_inst_args, C_time& c_inst_ti
             //--------------------------------------------------
             // correct reads in a block
             //--------------------------------------------------
-            #pragma omp parallel shared(bit_vector, hash_seed, kmer_vector) private(kmer_string, original_index, hash, bit_index)
+            #pragma omp parallel shared(bit_vector, hash_seed, kmer_vector) private(kmer_string, original_index1, original_index2, hash, bit_index1, bit_index2)
             {
                // iterate reads
                #pragma omp for schedule(dynamic, OPENMP_CHUNK_SIZE)
@@ -143,14 +153,19 @@ void C_correct_errors::program_kmers(const C_arg& c_inst_args, C_time& c_inst_ti
                   kmer_string = kmer_string.substr(0, kmer_length);
 
                   // program the k-mer into the bloom filter
-                  for (unsigned short int it_hash_func = 0; it_hash_func < num_hash_func; it_hash_func++) {
+                  for (unsigned short int it_hash_func = 0; it_hash_func < num_hash_func_real; it_hash_func++) {
                      MurmurHash3_x64_128(kmer_string.c_str(), kmer_length, hash_seed[it_hash_func], hash);
 
-                     original_index = hash[0] % bit_vector_width;
-                     bit_index      = original_index % BITS_PER_CHAR;
+                     original_index1 = hash[0] % bit_vector_width;
+                     original_index2 = hash[1] % bit_vector_width;
+                     bit_index1      = original_index1 % BITS_PER_CHAR;
+                     bit_index2      = original_index2 % BITS_PER_CHAR;
 
                      #pragma omp atomic
-                     bit_vector[original_index / BITS_PER_CHAR] |= BIT_MASK[bit_index];
+                     bit_vector[original_index1 / BITS_PER_CHAR] |= BIT_MASK[bit_index1];
+
+                     #pragma omp atomic
+                     bit_vector[original_index2 / BITS_PER_CHAR] |= BIT_MASK[bit_index2];
                   }
                }
             }
@@ -162,7 +177,7 @@ void C_correct_errors::program_kmers(const C_arg& c_inst_args, C_time& c_inst_ti
 
    // program remaining k-mers
    if (kmer_vector_index > 0) {
-      #pragma omp parallel shared(bit_vector, hash_seed, kmer_vector, kmer_vector_index) private(kmer_string, original_index, hash, bit_index)
+      #pragma omp parallel shared(bit_vector, hash_seed, kmer_vector, kmer_vector_index) private(kmer_string, original_index1, original_index2, hash, bit_index1, bit_index2)
       {
          // iterate reads
          #pragma omp for schedule(dynamic, OPENMP_CHUNK_SIZE)
@@ -172,14 +187,19 @@ void C_correct_errors::program_kmers(const C_arg& c_inst_args, C_time& c_inst_ti
             kmer_string = kmer_string.substr(0, kmer_length);
 
             // program the k-mer into the bloom filter
-            for (unsigned short int it_hash_func = 0; it_hash_func < num_hash_func; it_hash_func++) {
+            for (unsigned short int it_hash_func = 0; it_hash_func < num_hash_func_real; it_hash_func++) {
                MurmurHash3_x64_128(kmer_string.c_str(), kmer_length, hash_seed[it_hash_func], hash);
 
-               original_index = hash[0] % bit_vector_width;
-               bit_index      = original_index % BITS_PER_CHAR;
+               original_index1 = hash[0] % bit_vector_width;
+               original_index2 = hash[1] % bit_vector_width;
+               bit_index1      = original_index1 % BITS_PER_CHAR;
+               bit_index2      = original_index2 % BITS_PER_CHAR;
 
                #pragma omp atomic
-               bit_vector[original_index / BITS_PER_CHAR] |= BIT_MASK[bit_index];
+               bit_vector[original_index1 / BITS_PER_CHAR] |= BIT_MASK[bit_index1];
+
+               #pragma omp atomic
+               bit_vector[original_index2 / BITS_PER_CHAR] |= BIT_MASK[bit_index2];
             }
          }
       }
@@ -6090,19 +6110,26 @@ inline bool C_correct_errors::query_text(const std::string& kmer, const unsigned
       }
    }
 
-   bloom_type original_index;
+   bloom_type original_index1;
+   bloom_type original_index2;
 
    bloom_type hash [2];
 
-   unsigned short int bit_index;
+   unsigned short int bit_index1;
+   unsigned short int bit_index2;
 
-   for (unsigned short int it_hash_func = 0; it_hash_func < num_hash_func; it_hash_func++) {
+   for (unsigned short int it_hash_func = 0; it_hash_func < num_hash_func_real; it_hash_func++) {
       MurmurHash3_x64_128(kmer_internal.c_str(), kmer_length, hash_seed[it_hash_func], hash);
 
-      original_index = hash[0] % bit_vector_width;
-      bit_index      = original_index % BITS_PER_CHAR;
+      original_index1 = hash[0] % bit_vector_width;
+      original_index2 = hash[1] % bit_vector_width;
+      bit_index1      = original_index1 % BITS_PER_CHAR;
+      bit_index2      = original_index2 % BITS_PER_CHAR;
 
-      if ((bit_vector[original_index / BITS_PER_CHAR] & BIT_MASK[bit_index]) != BIT_MASK[bit_index]) {
+      if ((bit_vector[original_index1 / BITS_PER_CHAR] & BIT_MASK[bit_index1]) != BIT_MASK[bit_index1]) {
+         return false;
+      }
+      else if ((bit_vector[original_index2 / BITS_PER_CHAR] & BIT_MASK[bit_index2]) != BIT_MASK[bit_index2]) {
          return false;
       }
    }
@@ -6196,11 +6223,11 @@ inline void C_correct_errors::base_difference(std::vector< std::pair<unsigned in
 // generate_hash_seed
 //----------------------------------------------------------------------
 void C_correct_errors::generate_hash_seed(const bloom_type random_seed, std::vector<unsigned int>& hash_seed) {
-   hash_seed.resize(num_hash_func);
+   hash_seed.resize(num_hash_func_real);
 
    srand(static_cast<unsigned int>(random_seed));
 
-   for (unsigned short int it_seed = 0; it_seed < num_hash_func; it_seed++) {
+   for (unsigned short int it_seed = 0; it_seed < num_hash_func_real; it_seed++) {
       hash_seed[it_seed] = static_cast<unsigned int>(rand());
    }
 }
