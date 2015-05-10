@@ -65,6 +65,7 @@ Non deterministic behaviors are corrected.
 V1.01: 05/10/2015
 Runtime is improved by 10%.
 All the dependent libraries are included.
+Errors in compiling pigz are fixed.
 
 
 --------------------------------------------------
