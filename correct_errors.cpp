@@ -6534,7 +6534,7 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_gzipped(const C_arg&
                      }
                   }
 
-                  read_vector[current_read_index] = read_vector[current_read_index] + '\n';
+                  read_vector[current_read_index] += '\n';
 
                   // make a trimmed read
                   if ((trim_5_end + trim_3_end) > 0) {
@@ -6549,6 +6549,9 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_gzipped(const C_arg&
                // too many Ns
                // write reads without modification
                else {
+                  // header
+                  read_vector[current_read_index]     += '\n';
+
                   // sequence
                   read_vector[current_read_index + 1] += '\n';
 
@@ -6696,7 +6699,7 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_gzipped(const C_arg&
                   }
                }
 
-               read_vector[current_read_index] = read_vector[current_read_index] + '\n';
+               read_vector[current_read_index] += '\n';
 
                // make a trimmed quality score
                if ((trim_5_end + trim_3_end) > 0) {
@@ -6711,6 +6714,9 @@ void C_correct_errors::correct_errors_in_reads_single_fastq_gzipped(const C_arg&
             // too many Ns
             // write reads without modification
             else {
+               // header
+               read_vector[current_read_index]     += '\n';
+
                // sequence
                read_vector[current_read_index + 1] += '\n';
 
@@ -7046,7 +7052,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
                      }
                   }
 
-                  read_vector[current_read_index] = read_vector[current_read_index] + '\n';
+                  read_vector[current_read_index] += '\n';
 
                   // make a trimmed read
                   if ((trim_5_end + trim_3_end) > 0) {
@@ -7210,7 +7216,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
                   }
                }
 
-               read_vector[current_read_index] = read_vector[current_read_index] + '\n';
+               read_vector[current_read_index] += '\n';
 
                // make a trimmed quality score
                if ((trim_5_end + trim_3_end) > 0) {
@@ -7461,7 +7467,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
                      }
                   }
 
-                  read_vector[current_read_index] = read_vector[current_read_index] + '\n';
+                  read_vector[current_read_index] += '\n';
 
                   // make a trimmed read
                   if ((trim_5_end + trim_3_end) > 0) {
@@ -7625,7 +7631,7 @@ void C_correct_errors::correct_errors_in_reads_paired_fastq_gzipped(const C_arg&
                   }
                }
 
-               read_vector[current_read_index] = read_vector[current_read_index] + '\n';
+               read_vector[current_read_index] += '\n';
 
                // make a trimmed quality score
                if ((trim_5_end + trim_3_end) > 0) {
