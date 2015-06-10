@@ -34,7 +34,7 @@ Memory leak that may happen in a read with many low-quality-score bases is fixed
 V0.17: 06/03/2014
 A bug in setting the maximum allowed Ns for paired reads is fixed.
 
-V0.20: 10/16/2014
+V0.20: 10/16/2014 (Preliminary release of BLESS 2)
 BLESS is parallelized using OpenMP and MPI.
 Reads with different length are supported.
 The k-mer counting part is substituted with KMC (http://sun.aei.polsl.pl/kmc).
@@ -55,7 +55,7 @@ V0.24: 01/29/2015
 KMC is updated to 2.2.1 (The max memory usage of KMC can be fixed to 4 GB for any genome).
 A bug in writing a quality score hisgoram file is fixed.
 
-V1.00: 05/09/2015
+V1.00: 05/09/2015 (aka BLESS 2)
 Error correction algorithm is enhanced.
 Compressed input/output files are supported.
 Dependent libraries are included (Boost headers are still needed).
@@ -66,6 +66,9 @@ V1.01: 05/10/2015
 Runtime is improved by 10%.
 All the dependent libraries are included.
 Errors in compiling pigz are fixed.
+
+V1.02: 06/10/2015
+A bug in single-end reads with many Ns is fixed.
 
 
 --------------------------------------------------
