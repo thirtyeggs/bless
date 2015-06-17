@@ -1,11 +1,10 @@
 CC=gcc
 CFLAGS=-O3 -Wall -Wextra -I ../../zlib/install/include
-LDFLAGS=-L ../../zlib/install/lib -lz
 ZOPFLI=zopfli/src/zopfli/
 # use gcc and gmake on Solaris
 
 pigz: pigz.o yarn.o try.o ${ZOPFLI}deflate.o ${ZOPFLI}blocksplitter.o ${ZOPFLI}tree.o ${ZOPFLI}lz77.o ${ZOPFLI}cache.o ${ZOPFLI}hash.o ${ZOPFLI}util.o ${ZOPFLI}squeeze.o ${ZOPFLI}katajainen.o
-	$(CC) $(LDFLAGS) -o pigz $^ -lpthread -lm
+	$(CC) -L ../../zlib/install/lib -o pigz $^ -lpthread -lm -lz
 	ln -f pigz unpigz
 
 pigz.o: pigz.c yarn.h try.h ${ZOPFLI}deflate.h ${ZOPFLI}util.h
@@ -35,7 +34,7 @@ ${ZOPFLI}katajainen.o: ${ZOPFLI}katajainen.c ${ZOPFLI}katajainen.h
 dev: pigz pigzt pigzn
 
 pigzt: pigzt.o yarnt.o try.o ${ZOPFLI}deflate.o ${ZOPFLI}blocksplitter.o ${ZOPFLI}tree.o ${ZOPFLI}lz77.o ${ZOPFLI}cache.o ${ZOPFLI}hash.o ${ZOPFLI}util.o ${ZOPFLI}squeeze.o ${ZOPFLI}katajainen.o
-	$(CC) $(LDFLAGS) -o pigzt $^ -lpthread -lm
+	$(CC) -L ../../zlib/install/lib -o pigzt $^ -lpthread -lm -lz
 
 pigzt.o: pigz.c yarn.h try.h
 	$(CC) $(CFLAGS) -DDEBUG -g -c -o pigzt.o pigz.c
@@ -44,7 +43,7 @@ yarnt.o: yarn.c yarn.h
 	$(CC) $(CFLAGS) -DDEBUG -g -c -o yarnt.o yarn.c
 
 pigzn: pigzn.o tryn.o ${ZOPFLI}deflate.o ${ZOPFLI}blocksplitter.o ${ZOPFLI}tree.o ${ZOPFLI}lz77.o ${ZOPFLI}cache.o ${ZOPFLI}hash.o ${ZOPFLI}util.o ${ZOPFLI}squeeze.o ${ZOPFLI}katajainen.o
-	$(CC) $(LDFLAGS) -o pigzn $^ -lm
+	$(CC) -L ../../zlib/install/lib -o pigzn $^ -lm -lz
 
 pigzn.o: pigz.c try.h
 	$(CC) $(CFLAGS) -DDEBUG -DNOTHREAD -g -c -o pigzn.o pigz.c
